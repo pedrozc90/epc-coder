@@ -32,7 +32,7 @@ A lightweight and fast Java library for encoding and decoding RFID EPC (Electron
 ```java
 public class Main {
     public static void main(final String[] args) {
-        final ParseSSCC parser = ParseSSCC.Builder()
+        final SSCC sscc = ParseSSCC.Builder()
             .withCompanyPrefix("023356789")
             .withExtensionDigit(SSCCExtensionDigit.EXTENSION_3)
             .withSerial("0200002")
@@ -40,7 +40,6 @@ public class Main {
             .withFilterValue(SSCCFilterValue.RESERVED_5)
             .build();
 
-        final SSCC sscc = parser.getSSCC();
         System.out.println("EPC: " + sscc.getRfidTag());
     }
 }
@@ -51,11 +50,10 @@ public class Main {
 ```java
 public class Main {
     public static void main(final String[] args) {
-        final ParseSSCC parser = ParseSSCC.Builder()
+        final SSCC sscc = ParseSSCC.Builder()
             .withRFIDTag("31AC16465751CCD0C2000000")
             .build();
         
-        final SSCC sscc = parser.getSSCC();
         System.out.println("EPC: " + sscc.getRfidTag());
     }
 }
@@ -66,11 +64,10 @@ public class Main {
 ```java
 public class Main {
     public static void main(final String[] args) {
-        final ParseSSCC parser = ParseSSCC.Builder()
-            .withEPCTagURI("urn:epc:tag:sscc-96:5.023356789.30200002")
+        final SSCC sscc = ParseSSCC.Builder()
+            .withEpcTagURI("urn:epc:tag:sscc-96:5.023356789.30200002")
             .build();
         
-        final SSCC sscc = parser.getSSCC();
         System.out.println("EPC: " + sscc.getRfidTag());
     }
 }
@@ -81,14 +78,13 @@ public class Main {
 ```java
 public class Main {
     public static void main(final String[] args) {
-        final ParseSSCC parser = ParseSSCC.Builder()
-            .withEPCPureIdentityURI("urn:epc:id:sscc:023356789.30200002")
+        final SSCC sscc = ParseSSCC.Builder()
+            .withEpcPureIdentityURI("urn:epc:id:sscc:023356789.30200002")
             .withTagSize(SSCCTagSize.BITS_96)
             .withFilterValue(SSCCFilterValue.RESERVED_5)
             .build();
-
-        final SSCC sscc = parser.getSSCC();
-        System.out.println("EPC: " + sscc.getRfidTag());
+        
+        System.out.println("epc: " + sscc.getRfidTag());
     }
 }
 ```

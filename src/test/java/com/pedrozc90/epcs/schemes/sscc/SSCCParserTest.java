@@ -4,7 +4,7 @@ import com.pedrozc90.epcs.schemes.sscc.enums.SSCCExtensionDigit;
 import com.pedrozc90.epcs.schemes.sscc.enums.SSCCFilterValue;
 import com.pedrozc90.epcs.schemes.sscc.enums.SSCCTagSize;
 import com.pedrozc90.epcs.schemes.sscc.objects.SSCC;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,33 +14,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class ParseSSCCTest {
-
-    @Test
-    public void encode() throws Exception {
-        final SSCC result = ParseSSCC.Builder()
-            .withCompanyPrefix("023356789")
-            .withExtensionDigit(SSCCExtensionDigit.EXTENSION_3)
-            .withSerial("0200002")
-            .withTagSize(SSCCTagSize.BITS_96)
-            .withFilterValue(SSCCFilterValue.RESERVED_5)
-            .build()
-            .getSSCC();
-
-        assertNotNull(result);
-        assertEquals("31AC16465751CCD0C2000000", result.getRfidTag());
-        assertEquals("urn:epc:tag:sscc-96:5.023356789.30200002", result.getEpcTagURI());
-        assertEquals("urn:epc:id:sscc:023356789.30200002", result.getEpcPureIdentityURI());
-        assertEquals("sscc", result.getEpcScheme());
-        assertEquals("96", result.getTagSize());
-        assertEquals("5", result.getFilterValue());
-        assertEquals("9", result.getPrefixLength());
-        assertEquals("023356789", result.getCompanyPrefix());
-        assertEquals("2", result.getCheckDigit());
-        assertEquals("3", result.getExtensionDigit());
-        assertEquals("0200002", result.getSerial());
-        assertEquals(96, result.getBinary().length());
-    }
+public class SSCCParserTest {
 
     private static Stream<Arguments> provideData() {
         return Stream.of(
@@ -69,14 +43,61 @@ public class ParseSSCCTest {
                 "9",
                 "023356789",
                 "3",
-                "6",
-                "0",
+                "2",
+                "3",
                 "0200002",
                 96
             )
         );
     }
 
+    @DisplayName("Encode")
+    @ParameterizedTest(name = "[{index}] RFID Tag: {0}")
+    @MethodSource("provideData")
+    public void encode(
+        final String expectedRfidTag,
+        final String expectedEpcTagURI,
+        final String expectedEpcPureIdentityURI,
+        final String expectedEpcScheme,
+        final String expectedTagSize,
+        final String expectedFilterValue,
+        final String expectedPrefixLength,
+        final String expectedCompanyPrefix,
+        final String expectedPartitionValue,
+        final String expectedCheckDigit,
+        final String expectedExtensionDigit,
+        final String expectedSerial,
+        final Integer expectedBitCount
+    ) throws Exception {
+        final SSCCTagSize tagSize = SSCCTagSize.of(Integer.parseInt(expectedTagSize));
+        final SSCCFilterValue filterValue = SSCCFilterValue.of(Integer.parseInt(expectedFilterValue));
+        final SSCCExtensionDigit extensionDigit = SSCCExtensionDigit.of(Integer.parseInt(expectedExtensionDigit));
+
+        final SSCC result = SSCCParser.Builder()
+            .withCompanyPrefix(expectedCompanyPrefix)
+            .withExtensionDigit(extensionDigit)
+            .withSerial(expectedSerial)
+            .withTagSize(tagSize)
+            .withFilterValue(filterValue)
+            .build();
+
+        assertNotNull(result);
+        assertEquals(expectedRfidTag, result.getRfidTag());
+        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.getEpcScheme());
+        assertEquals(expectedTagSize, result.getTagSize());
+        assertEquals(expectedFilterValue, result.getFilterValue());
+        assertEquals(expectedPrefixLength, result.getPrefixLength());
+        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
+        assertEquals(expectedPartitionValue, result.getPartitionValue());
+        assertEquals(expectedCheckDigit, result.getCheckDigit());
+        assertEquals(expectedExtensionDigit, result.getExtensionDigit());
+        assertEquals(expectedSerial, result.getSerial());
+        assertEquals(expectedBitCount, result.getBinary().length());
+    }
+
+    @DisplayName("Decode RFIDTag")
     @ParameterizedTest(name = "[{index}] RFID Tag: {0}")
     @MethodSource("provideData")
     public void decode_RFIDTag(
@@ -94,10 +115,9 @@ public class ParseSSCCTest {
         final String expectedSerial,
         final Integer expectedBitCount
     ) throws Exception {
-        final SSCC result = ParseSSCC.Builder()
+        final SSCC result = SSCCParser.Builder()
             .withRFIDTag(expectedRfidTag)
-            .build()
-            .getSSCC();
+            .build();
 
         assertNotNull(result);
         assertEquals(expectedRfidTag, result.getRfidTag());
@@ -115,6 +135,7 @@ public class ParseSSCCTest {
         assertEquals(expectedBitCount, result.getBinary().length());
     }
 
+    @DisplayName("Decode Epc Tag URI")
     @ParameterizedTest(name = "[{index}] Epc Tag URI: {1}")
     @MethodSource("provideData")
     public void decode_EpcTagURI(
@@ -132,10 +153,9 @@ public class ParseSSCCTest {
         final String expectedSerial,
         final Integer expectedBitCount
     ) throws Exception {
-        final SSCC result = ParseSSCC.Builder()
-            .withEPCTagURI(expectedEpcTagURI)
-            .build()
-            .getSSCC();
+        final SSCC result = SSCCParser.Builder()
+            .withEpcTagURI(expectedEpcTagURI)
+            .build();
 
         assertNotNull(result);
         assertEquals(expectedRfidTag, result.getRfidTag());
@@ -153,27 +173,47 @@ public class ParseSSCCTest {
         assertEquals(expectedBitCount, result.getBinary().length());
     }
 
-    @Test
-    public void decode_EPCPureIdentityURI() throws Exception {
-        final SSCC result = ParseSSCC.Builder()
-            .withEPCPureIdentityURI("urn:epc:id:sscc:023356789.30200002")
-            .withTagSize(SSCCTagSize.BITS_96)
-            .withFilterValue(SSCCFilterValue.RESERVED_5)
-            .build()
-            .getSSCC();
+    @DisplayName("Decode Epc Pure Identity URI")
+    @ParameterizedTest(name = "[{index}] Epc Pure Identity URI: {1}")
+    @MethodSource("provideData")
+    public void decode_EpcPureIdentityURI(
+        final String expectedRfidTag,
+        final String expectedEpcTagURI,
+        final String expectedEpcPureIdentityURI,
+        final String expectedEpcScheme,
+        final String expectedTagSize,
+        final String expectedFilterValue,
+        final String expectedPrefixLength,
+        final String expectedCompanyPrefix,
+        final String expectedPartitionValue,
+        final String expectedCheckDigit,
+        final String expectedExtensionDigit,
+        final String expectedSerial,
+        final Integer expectedBitCount
+    ) throws Exception {
+        final SSCCTagSize tagSize = SSCCTagSize.of(Integer.parseInt(expectedTagSize));
+        final SSCCFilterValue filterValue = SSCCFilterValue.of(Integer.parseInt(expectedFilterValue));
+
+        final SSCC result = SSCCParser.Builder()
+            .withEpcPureIdentityURI(expectedEpcPureIdentityURI)
+            .withTagSize(tagSize)
+            .withFilterValue(filterValue)
+            .build();
 
         assertNotNull(result);
-        assertEquals("31AC16465751CCD0C2000000", result.getRfidTag());
-        assertEquals("urn:epc:tag:sscc-96:5.023356789.30200002", result.getEpcTagURI());
-        assertEquals("sscc", result.getEpcScheme());
-        assertEquals("96", result.getTagSize());
-        assertEquals("5", result.getFilterValue());
-        assertEquals("9", result.getPrefixLength());
-        assertEquals("023356789", result.getCompanyPrefix());
-        assertEquals("2", result.getCheckDigit());
-        assertEquals("3", result.getExtensionDigit());
-        assertEquals("0200002", result.getSerial());
-        assertEquals(96, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.getRfidTag());
+        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.getEpcScheme());
+        assertEquals(expectedTagSize, result.getTagSize());
+        assertEquals(expectedFilterValue, result.getFilterValue());
+        assertEquals(expectedPrefixLength, result.getPrefixLength());
+        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
+        assertEquals(expectedPartitionValue, result.getPartitionValue());
+        assertEquals(expectedCheckDigit, result.getCheckDigit());
+        assertEquals(expectedExtensionDigit, result.getExtensionDigit());
+        assertEquals(expectedSerial, result.getSerial());
+        assertEquals(expectedBitCount, result.getBinary().length());
     }
 
 }

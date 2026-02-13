@@ -3,7 +3,7 @@ package com.pedrozc90.epcs.schemes.cpi;
 import com.pedrozc90.epcs.schemes.cpi.enums.CPIFilterValue;
 import com.pedrozc90.epcs.schemes.cpi.enums.CPITagSize;
 import com.pedrozc90.epcs.schemes.cpi.objects.CPI;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class ParseCPITest {
+public class CPIParserTest {
 
     private static Stream<Arguments> provideData() {
         return Stream.of(
@@ -54,7 +54,7 @@ public class ParseCPITest {
                 "9521141",
                 "5PQ7/Z43",
                 "12345",
-                0
+                144
             ),
             Arguments.arguments(
                 "3DF4257BF71CB304260000075BCD1500",
@@ -85,7 +85,8 @@ public class ParseCPITest {
         );
     }
 
-    @ParameterizedTest(name = "[{index}] encode")
+    @DisplayName("Encode")
+    @ParameterizedTest(name = "[{index}] RFID Tag: {0}")
     @MethodSource("provideData")
     public void encode(
         final String expectedRfidTag,
@@ -102,14 +103,13 @@ public class ParseCPITest {
     ) throws Exception {
         final CPITagSize tagSize = CPITagSize.of(expectedBitCount);
         final CPIFilterValue filterValue = CPIFilterValue.of(Integer.parseInt(expectedFilterValue));
-        final CPI result = ParseCPI.Builder()
+        final CPI result = CPIParser.Builder()
             .withCompanyPrefix(expectedCompanyPrefix)
             .withComponentPartReference(expectedComponentPartReference)
             .withSerial(expectedSerial)
             .withTagSize(tagSize)
             .withFilterValue(filterValue)
-            .build()
-            .getCPI();
+            .build();
 
         assertNotNull(result);
         assertEquals(expectedRfidTag, result.getRfidTag());
@@ -125,6 +125,7 @@ public class ParseCPITest {
         assertEquals(expectedBitCount, result.getBinary().length());
     }
 
+    @DisplayName("Decode RFID Tag")
     @ParameterizedTest(name = "[{index}] RFID Tag: {0}")
     @MethodSource("provideData")
     public void decode_RFIDTag(
@@ -140,10 +141,9 @@ public class ParseCPITest {
         final String expectedSerial,
         final Integer expectedBitCount
     ) throws Exception {
-        final CPI result = ParseCPI.Builder()
+        final CPI result = CPIParser.Builder()
             .withRFIDTag(expectedRfidTag)
-            .build()
-            .getCPI();
+            .build();
 
         assertNotNull(result);
         assertEquals(expectedRfidTag, result.getRfidTag());
@@ -159,6 +159,7 @@ public class ParseCPITest {
         assertEquals(expectedBitCount, result.getBinary().length());
     }
 
+    @DisplayName("Decode Epc Tag URI")
     @ParameterizedTest(name = "[{index}] EpcTagURI: {1}")
     @MethodSource("provideData")
     public void decode_EpcTagURI(
@@ -174,10 +175,9 @@ public class ParseCPITest {
         final String expectedSerial,
         final Integer expectedBitCount
     ) throws Exception {
-        final CPI result = ParseCPI.Builder()
-            .withEPCTagURI(expectedEpcTagURI)
-            .build()
-            .getCPI();
+        final CPI result = CPIParser.Builder()
+            .withEpcTagURI(expectedEpcTagURI)
+            .build();
 
         assertNotNull(result);
         assertEquals(expectedRfidTag, result.getRfidTag());
@@ -193,6 +193,7 @@ public class ParseCPITest {
         assertEquals(expectedBitCount, result.getBinary().length());
     }
 
+    @DisplayName("Decode EpcPureIdentityURI")
     @ParameterizedTest(name = "[{index}] EpcPureIdentityURI: {2}")
     @MethodSource("provideData")
     public void decode_EpcPureIdentityURI(
@@ -211,12 +212,11 @@ public class ParseCPITest {
         final CPITagSize tagSize = CPITagSize.of(expectedBitCount);
         final CPIFilterValue filterValue = CPIFilterValue.of(Integer.parseInt(expectedFilterValue));
 
-        final CPI result = ParseCPI.Builder()
-            .withEPCPureIdentityURI(expectedEpcPureIdentityURI)
+        final CPI result = CPIParser.Builder()
+            .withEpcPureIdentityURI(expectedEpcPureIdentityURI)
             .withTagSize(tagSize)
             .withFilterValue(filterValue)
-            .build()
-            .getCPI();
+            .build();
 
         assertNotNull(result);
         assertEquals(expectedRfidTag, result.getRfidTag());
@@ -230,27 +230,6 @@ public class ParseCPITest {
         assertEquals(expectedComponentPartReference, result.getComponentPartReference());
         assertEquals(expectedSerial, result.getSerial());
         assertEquals(expectedBitCount, result.getBinary().length());
-    }
-
-    @Test
-    public void decode_EPCPureIdentityURI() throws Exception {
-        final CPI result = ParseCPI.Builder()
-            .withEPCPureIdentityURI("urn:epc:id:cpi:0614141.123ABC.123456789")
-            .withTagSize(CPITagSize.BITS_VARIABLE)
-            .withFilterValue(CPIFilterValue.RESERVED_7)
-            .build()
-            .getCPI();
-
-        assertEquals("3DF4257BF71CB30420C000075BCD1500", result.getRfidTag());
-        assertEquals("urn:epc:tag:cpi-var:7.0614141.123ABC.123456789", result.getEpcTagURI());
-        assertEquals("cpi", result.getEpcScheme());
-        assertEquals("var", result.getTagSize());
-        assertEquals("7", result.getFilterValue());
-        assertEquals("7", result.getPrefixLength());
-        assertEquals("0614141", result.getCompanyPrefix());
-        assertEquals("123ABC", result.getComponentPartReference());
-        assertEquals("123456789", result.getSerial());
-        assertEquals(128, result.getBinary().length());
     }
 
 }
