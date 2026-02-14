@@ -8,7 +8,9 @@ import com.pedrozc90.epcs.schemes.grai.enums.GRAIHeader;
 import com.pedrozc90.epcs.schemes.grai.enums.GRAITagSize;
 import com.pedrozc90.epcs.schemes.grai.objects.GRAI;
 import com.pedrozc90.epcs.schemes.grai.partitionTable.GRAIPartitionTable;
+import com.pedrozc90.epcs.utils.BinaryUtils;
 import com.pedrozc90.epcs.utils.Converter;
+import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -44,7 +46,7 @@ public class GRAIParser {
     }
 
     private ParsedData decodeRFIDTag(final String rfidTag) {
-        final String inputBin = Converter.hexToBin(rfidTag);
+        final String inputBin = BinaryUtils.toBinary(rfidTag);
 
         final String headerBin = inputBin.substring(0, 8);
         final String filterBin = inputBin.substring(8, 11);
@@ -61,11 +63,11 @@ public class GRAIParser {
 
         final String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
         final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
-        final String companyPrefix = Converter.strZero(companyPrefixDec, tableItem.l());
+        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
 
         final String assetTypeBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
         final String assetTypeDec = Converter.binToDec(assetTypeBin);
-        final String assetType = Converter.strZero(assetTypeDec, tableItem.digits());
+        final String assetType = StringUtils.leftPad(assetTypeDec, tableItem.digits(), '0');
 
         String serialBin = inputBin.substring(14 + tableItem.m() + tableItem.n());
 
@@ -135,7 +137,7 @@ public class GRAIParser {
         final BinaryResult result = toBinary(data);
 
         final String outputBin = result.binary;
-        final String outputHex = Converter.binToHex(outputBin);
+        final String outputHex = BinaryUtils.toHex(outputBin);
 
         final int remainder = result.remainder;
 

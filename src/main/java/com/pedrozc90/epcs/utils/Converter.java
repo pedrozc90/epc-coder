@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated
 public class Converter {
 
     private static final Map<Character, String> _binary;
@@ -306,19 +307,6 @@ public class Converter {
 
         sb.append(in);
 
-        return sb.toString();
-    }
-
-    @Deprecated
-    public static String strZero(String str, int len) {
-
-        StringBuilder sb = new StringBuilder();
-
-        for (int toPrepend = len - str.length(); toPrepend > 0; toPrepend--) {
-            sb.append('0');
-        }
-
-        sb.append(str);
         return sb.toString();
     }
 

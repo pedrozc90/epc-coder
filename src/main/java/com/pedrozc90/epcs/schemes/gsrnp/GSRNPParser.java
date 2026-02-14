@@ -8,7 +8,9 @@ import com.pedrozc90.epcs.schemes.gsrnp.enums.GSRNPHeader;
 import com.pedrozc90.epcs.schemes.gsrnp.enums.GSRNPTagSize;
 import com.pedrozc90.epcs.schemes.gsrnp.objects.GSRNP;
 import com.pedrozc90.epcs.schemes.gsrnp.partitionTable.GSRNPPartitionTable;
+import com.pedrozc90.epcs.utils.BinaryUtils;
 import com.pedrozc90.epcs.utils.Converter;
+import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -45,7 +47,7 @@ public class GSRNPParser {
     }
 
     private ParsedData decodeRFIDTag(final String rfidTag) {
-        final String inputBin = Converter.hexToBin(rfidTag);
+        final String inputBin = BinaryUtils.toBinary(rfidTag);
 
         final String headerBin = inputBin.substring(0, 8);
         final String filterBin = inputBin.substring(8, 11);
@@ -62,10 +64,10 @@ public class GSRNPParser {
 
         final String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
         final String companyPrefixDec = Converter.binToDec(companyPrefixBin); //Long.toString( Long.parseLong(companyPrefixBin, 2) );
-        final String companyPrefix = Converter.strZero(companyPrefixDec, tableItem.l());
+        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
 
         final String serialWithExtensionBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
-        final String serviceReference = Converter.strZero(Converter.binToDec(serialWithExtensionBin), tableItem.digits());
+        final String serviceReference = StringUtils.leftPad(Converter.binToDec(serialWithExtensionBin), tableItem.digits(), '0');
 
         return new ParsedData(tableItem, tagSize, filterValue, prefixLength, companyPrefix, serviceReference);
     }
@@ -123,7 +125,7 @@ public class GSRNPParser {
 
     private GSRNP toGSRNP(final ParsedData data) {
         final String outputBin = toBinary(data);
-        final String outputHex = Converter.binToHex(outputBin);
+        final String outputHex = BinaryUtils.toHex(outputBin);
 
         final Integer checkDigit = getCheckDigit(data.companyPrefix, data.serviceReference);
 

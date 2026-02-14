@@ -9,7 +9,9 @@ import com.pedrozc90.epcs.schemes.sgtin.enums.SGTINHeader;
 import com.pedrozc90.epcs.schemes.sgtin.enums.SGTINTagSize;
 import com.pedrozc90.epcs.schemes.sgtin.objects.SGTIN;
 import com.pedrozc90.epcs.schemes.sgtin.partitionTable.SGTINPartitionTable;
+import com.pedrozc90.epcs.utils.BinaryUtils;
 import com.pedrozc90.epcs.utils.Converter;
+import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,7 +47,8 @@ public class SGTINParser {
 
     /* --- Rfid Tag --- */
     private ParsedData decodeRFIDTag(final String rfidTag) throws EpcParseException {
-        final String inputBin = Converter.hexToBin(rfidTag);
+        // convert '3666C4409047E159B2C2BF100000000000000000000000000000' -> '00110000 01001001 00000000 00000001 ...' (198 bits or more)
+        final String inputBin = BinaryUtils.toBinary(rfidTag);
 
         final String headerBin = inputBin.substring(0, 8);
         final String filterBin = inputBin.substring(8, 11);
@@ -67,10 +70,10 @@ public class SGTINParser {
             .substring(0, tagSize.getSerialBitCount());
 
         final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
-        final String companyPrefix = Converter.strZero(companyPrefixDec, tableItem.l());
+        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
         final PrefixLength prefixLength = PrefixLength.of(tableItem.l());
 
-        final String itemReferenceWithExtensionDec = Converter.strZero(Converter.binToDec(itemReferenceWithExtensionBin), tableItem.digits());
+        final String itemReferenceWithExtensionDec = StringUtils.leftPad(Converter.binToDec(itemReferenceWithExtensionBin), tableItem.digits(), '0');
 
         final String extensionDec = itemReferenceWithExtensionDec.substring(0, 1);
         final SGTINExtensionDigit extensionDigit = SGTINExtensionDigit.of(Integer.parseInt(extensionDec));
@@ -170,7 +173,7 @@ public class SGTINParser {
         final Integer checkDigit = calculateCheckDigit(data.extensionDigit, data.companyPrefix, data.itemReference);
 
         final BinaryResult result = toBinary(data);
-        final String hex = Converter.binToHex(result.binary);
+        final String hex = BinaryUtils.toHex(result.binary);
 
         final SGTIN sgtin = new SGTIN();
         // sgtin.setEpcScheme("sgtin");

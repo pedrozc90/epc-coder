@@ -8,7 +8,9 @@ import com.pedrozc90.epcs.schemes.cpi.enums.CPIHeader;
 import com.pedrozc90.epcs.schemes.cpi.enums.CPITagSize;
 import com.pedrozc90.epcs.schemes.cpi.objects.CPI;
 import com.pedrozc90.epcs.schemes.cpi.partitionTable.CPIPartitionTable;
+import com.pedrozc90.epcs.utils.BinaryUtils;
 import com.pedrozc90.epcs.utils.Converter;
+import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +45,7 @@ public class CPIParser {
     }
 
     private ParsedData decodeRFIDTag(String rfidTag) {
-        final String inputBin = Converter.hexToBin(rfidTag);
+        final String inputBin = BinaryUtils.toBinary(rfidTag);
 
         final String headerBin = inputBin.substring(0, 8);
         final String filterBin = inputBin.substring(8, 11);
@@ -89,7 +91,7 @@ public class CPIParser {
 
         final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
         final String serial = Converter.binToDec(serialBin);
-        final String companyPrefix = Converter.strZero(companyPrefixDec, tableItem.l()); // strzero aqui
+        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
 
         return new ParsedData(tableItem, tagSize, filterValue, prefixLength, companyPrefix, componentPartReference, serial);
     }
@@ -191,7 +193,7 @@ public class CPIParser {
         final BinaryResult result = toBinary(data);
 
         final String outputBin = result.binary;
-        final String outputHex = Converter.binToHex(outputBin);
+        final String outputHex = BinaryUtils.toHex(outputBin);
 
         final int remainder = result.remainder;
 

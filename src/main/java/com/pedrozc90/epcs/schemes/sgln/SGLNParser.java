@@ -8,7 +8,9 @@ import com.pedrozc90.epcs.schemes.sgln.enums.SGLNHeader;
 import com.pedrozc90.epcs.schemes.sgln.enums.SGLNTagSize;
 import com.pedrozc90.epcs.schemes.sgln.objects.SGLN;
 import com.pedrozc90.epcs.schemes.sgln.partitionTable.SGLNPartitionTable;
+import com.pedrozc90.epcs.utils.BinaryUtils;
 import com.pedrozc90.epcs.utils.Converter;
+import com.pedrozc90.epcs.utils.StringUtils;
 import lombok.Getter;
 
 import java.util.Optional;
@@ -45,7 +47,7 @@ public class SGLNParser {
     }
 
     private ParsedData decodeRFIDTag(final String rfidTag) {
-        final String inputBin = Converter.hexToBin(rfidTag);
+        final String inputBin = BinaryUtils.toBinary(rfidTag);
 
         final String headerBin = inputBin.substring(0, 8);
         final String filterBin = inputBin.substring(8, 11);
@@ -59,11 +61,11 @@ public class SGLNParser {
 
         final String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
         final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
-        final String companyPrefix = Converter.strZero(companyPrefixDec, tableItem.l());
+        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
 
         final String locationReferenceBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
         final String locationReferenceDec = Converter.binToDec(locationReferenceBin);
-        final String locationReference = Converter.strZero(locationReferenceDec, tableItem.digits());
+        final String locationReference = StringUtils.leftPad(locationReferenceDec, tableItem.digits(), '0');
 
         String extensionBin = inputBin.substring(14 + tableItem.m() + tableItem.n());
 
@@ -142,7 +144,7 @@ public class SGLNParser {
         final BinaryResult result = toBinary(data);
 
         final String outputBin = result.binary;
-        final String outputHex = Converter.binToHex(outputBin);
+        final String outputHex = BinaryUtils.toHex(outputBin);
 
         final int remainder = result.remainder;
 

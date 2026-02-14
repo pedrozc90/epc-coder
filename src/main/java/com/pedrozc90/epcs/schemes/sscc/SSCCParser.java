@@ -9,7 +9,9 @@ import com.pedrozc90.epcs.schemes.sscc.enums.SSCCHeader;
 import com.pedrozc90.epcs.schemes.sscc.enums.SSCCTagSize;
 import com.pedrozc90.epcs.schemes.sscc.objects.SSCC;
 import com.pedrozc90.epcs.schemes.sscc.partitionTable.SSCCPartitionTable;
+import com.pedrozc90.epcs.utils.BinaryUtils;
 import com.pedrozc90.epcs.utils.Converter;
+import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -47,7 +49,7 @@ public class SSCCParser {
     }
 
     private static ParsedData decodeRFIDTag(final String rfidTag) {
-        final String inputBin = Converter.hexToBin(rfidTag);
+        final String inputBin = BinaryUtils.toBinary(rfidTag);
 
         final String headerBin = inputBin.substring(0, 8);
         final String filterBin = inputBin.substring(8, 11);
@@ -63,13 +65,13 @@ public class SSCCParser {
 
         final String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
         final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
-        final String companyPrefix = Converter.strZero(companyPrefixDec, tableItem.l());
+        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
 
         final String filterDec = Long.toString(Long.parseLong(filterBin, 2));
         final SSCCFilterValue filterValue = SSCCFilterValue.of(Integer.parseInt(filterDec));
 
         final String serialWithExtensionBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
-        final String serialWithExtension = Converter.strZero(Converter.binToDec(serialWithExtensionBin), tableItem.digits());
+        final String serialWithExtension = StringUtils.leftPad(Converter.binToDec(serialWithExtensionBin), tableItem.digits(), '0');
 
         final String extensionDec = serialWithExtension.substring(0, 1);
         final SSCCExtensionDigit extensionDigit = SSCCExtensionDigit.of(Integer.parseInt(extensionDec));
@@ -131,7 +133,7 @@ public class SSCCParser {
         final Integer checkDigit = getCheckDigit(data.extensionDigit, data.companyPrefix, data.serial);
 
         final String outputBin = toBinary(data);
-        final String outputHex = Converter.binToHex(outputBin);
+        final String outputHex = BinaryUtils.toHex(outputBin);
 
         final SSCC sscc = new SSCC();
         // sscc.setEpcScheme("sscc");
