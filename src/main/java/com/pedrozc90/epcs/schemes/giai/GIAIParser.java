@@ -10,7 +10,6 @@ import com.pedrozc90.epcs.schemes.giai.objects.GIAI;
 import com.pedrozc90.epcs.schemes.giai.partitionTable.GIAIPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
 import com.pedrozc90.epcs.utils.Converter;
-import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -61,18 +60,17 @@ public class GIAIParser {
         final GIAIFilterValue filterValue = GIAIFilterValue.of(Integer.parseInt(filterDec));
 
         final String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
-        final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
-        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
+        final String companyPrefix = BinaryUtils.decodeInteger(companyPrefixBin, tableItem.l());
 
-        String individualAssetReferenceBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
+        final String individualAssetReferenceBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
 
-        String individualAssetReference = null;
-        if (tagSize.getSerialBitCount() == 112) {
-            individualAssetReferenceBin = Converter.convertBinToBit(individualAssetReferenceBin, 7, 8);
-            individualAssetReference = Converter.binToString(individualAssetReferenceBin);
-        } else if (tagSize.getSerialBitCount() == 38) {
-            individualAssetReference = Converter.binToDec(individualAssetReferenceBin);
-        }
+        final String individualAssetReference = switch (tagSize.getSerialBitCount()) {
+            // giai-96
+            case 38 -> BinaryUtils.decodeInteger(individualAssetReferenceBin);
+            // giai-202
+            case 112 -> BinaryUtils.decodeString(individualAssetReferenceBin, 7);
+            default -> throw new IllegalArgumentException("Unsupported tag size '%s'".formatted(tagSize));
+        };
 
         return new ParsedData(tableItem, tagSize, filterValue, prefixLength, companyPrefix, individualAssetReference);
     }
@@ -159,15 +157,15 @@ public class GIAIParser {
         // remainder = (int) (Math.ceil((tagSize.getValue() / 16.0)) * 16) - tagSize.getValue();
         final int remainder = Converter.remainder(data.tagSize.getValue());
 
-        bin.append(Converter.decToBin(data.tagSize.getHeader(), 8));
-        bin.append(Converter.decToBin(data.filterValue.getValue(), 3));
-        bin.append(Converter.decToBin(data.tableItem.partitionValue(), 3));
-        bin.append(Converter.decToBin(Integer.parseInt(data.companyPrefix), data.tableItem.m()));
+        bin.append(BinaryUtils.encodeInteger(data.tagSize.getHeader(), 8));
+        bin.append(BinaryUtils.encodeInteger(data.filterValue.getValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.tableItem.partitionValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.companyPrefix, data.tableItem.m()));
 
-        if (data.tagSize.getValue() == 202) {
-            bin.append(Converter.fill(Converter.StringToBinary(data.individualAssetReference, 7), data.tableItem.n() + remainder));
-        } else if (data.tagSize.getValue() == 96) {
-            bin.append(Converter.decToBin(data.individualAssetReference, data.tableItem.n() + remainder));
+        if (data.tagSize.getValue() == 96) {
+            bin.append(BinaryUtils.encodeInteger(data.individualAssetReference, data.tableItem.n() + remainder));
+        } else if (data.tagSize.getValue() == 202) {
+            bin.append(BinaryUtils.encodeString(data.individualAssetReference, data.tableItem.n() + remainder, 7));
         }
 
         return new BinaryResult(bin.toString(), remainder);

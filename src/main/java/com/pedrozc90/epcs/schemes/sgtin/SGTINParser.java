@@ -11,7 +11,6 @@ import com.pedrozc90.epcs.schemes.sgtin.objects.SGTIN;
 import com.pedrozc90.epcs.schemes.sgtin.partitionTable.SGTINPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
 import com.pedrozc90.epcs.utils.Converter;
-import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,30 +68,26 @@ public class SGTINParser {
             .substring(14 + tableItem.m() + tableItem.n())
             .substring(0, tagSize.getSerialBitCount());
 
-        final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
-        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
+        // final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
+        final String companyPrefix = BinaryUtils.decodeInteger(companyPrefixBin, tableItem.l());
         final PrefixLength prefixLength = PrefixLength.of(tableItem.l());
 
-        final String itemReferenceWithExtensionDec = StringUtils.leftPad(Converter.binToDec(itemReferenceWithExtensionBin), tableItem.digits(), '0');
+        final String itemReferenceWithExtensionDec = BinaryUtils.decodeInteger(itemReferenceWithExtensionBin, tableItem.digits());
 
         final String extensionDec = itemReferenceWithExtensionDec.substring(0, 1);
         final SGTINExtensionDigit extensionDigit = SGTINExtensionDigit.of(Integer.parseInt(extensionDec));
 
         final String itemReference = itemReferenceWithExtensionDec.substring(1);
 
-        final String serial = parseSerial(tagSize, serialBin);
+        final String serial = switch (tagSize.getSerialBitCount()) {
+            // sgtin-96
+            case 38 -> BinaryUtils.decodeInteger(serialBin);
+            // sgtin-198
+            case 140 -> BinaryUtils.decodeString(serialBin, 7);
+            default -> throw new EpcParseException("Unsupported tag size");
+        };
 
         return new ParsedData(tableItem, tagSize, filterValue, extensionDigit, prefixLength, companyPrefix, itemReference, serial);
-    }
-
-    private String parseSerial(final SGTINTagSize tagSize, final String serialBin) throws EpcParseException {
-        if (tagSize.getSerialBitCount() == 140) {
-            final String tmp = Converter.convertBinToBit(serialBin, 7, 8);
-            return Converter.binToString(tmp);
-        } else if (tagSize.getSerialBitCount() == 38) {
-            return Converter.binToDec(serialBin);
-        }
-        throw new EpcParseException("Unsupported tag size");
     }
 
     /* --- EPc Tag URI --- */
@@ -153,17 +148,19 @@ public class SGTINParser {
         // remainder = (int) (Math.ceil((tagSize.getValue() / 16.0)) * 16) - tagSize.getValue();
         final int remainder = Converter.remainder(data.tagSize.getValue());
 
-        bin.append(Converter.decToBin(data.tagSize.getHeader(), 8));
-        bin.append(Converter.decToBin(data.filterValue.getValue(), 3));
-        bin.append(Converter.decToBin(data.tableItem.partitionValue(), 3));
-        bin.append(Converter.decToBin(data.companyPrefix, data.tableItem.m()));
-        bin.append(Converter.decToBin(Integer.parseInt(data.extensionDigit.getValue() + data.itemReference), data.tableItem.n()));
+        bin.append(BinaryUtils.encodeInteger(data.tagSize.getHeader(), 8));
+        bin.append(BinaryUtils.encodeInteger(data.filterValue.getValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.tableItem.partitionValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.companyPrefix, data.tableItem.m()));
+        bin.append(BinaryUtils.encodeInteger(data.extensionDigit.getValue() + data.itemReference, data.tableItem.n()));
 
+        // sgtin-96
         if (data.tagSize.getValue() == 96) {
-            bin.append(Converter.decToBin(data.serial, data.tagSize.getSerialBitCount() + remainder));
-        } else if (data.tagSize.getValue() == 198) {
-            final String serialBin = Converter.StringToBinary(data.serial, 7);
-            bin.append(Converter.fill(serialBin, data.tagSize.getSerialBitCount() + remainder));
+            bin.append(BinaryUtils.encodeInteger(data.serial, data.tagSize.getSerialBitCount() + remainder));
+        }
+        // sgtin-198
+        else if (data.tagSize.getValue() == 198) {
+            bin.append(BinaryUtils.encodeString(data.serial, data.tagSize.getSerialBitCount() + remainder, 7));
         }
 
         return new BinaryResult(bin.toString(), remainder);

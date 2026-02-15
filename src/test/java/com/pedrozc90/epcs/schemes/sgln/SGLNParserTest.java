@@ -54,7 +54,7 @@ public class SGLNParserTest {
                 "9521141",
                 "12345",
                 "32a/b",
-                195
+                208
             )
         );
     }

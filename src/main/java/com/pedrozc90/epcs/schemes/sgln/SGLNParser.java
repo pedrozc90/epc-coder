@@ -10,7 +10,6 @@ import com.pedrozc90.epcs.schemes.sgln.objects.SGLN;
 import com.pedrozc90.epcs.schemes.sgln.partitionTable.SGLNPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
 import com.pedrozc90.epcs.utils.Converter;
-import com.pedrozc90.epcs.utils.StringUtils;
 import lombok.Getter;
 
 import java.util.Optional;
@@ -60,22 +59,20 @@ public class SGLNParser {
         final SGLNFilterValue filterValue = SGLNFilterValue.of(Integer.parseInt(filterDec));
 
         final String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
-        final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
-        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
+        final String companyPrefix = BinaryUtils.decodeInteger(companyPrefixBin, tableItem.l());
 
         final String locationReferenceBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
-        final String locationReferenceDec = Converter.binToDec(locationReferenceBin);
-        final String locationReference = StringUtils.leftPad(locationReferenceDec, tableItem.digits(), '0');
+        final String locationReference = BinaryUtils.decodeInteger(locationReferenceBin, tableItem.digits());
 
-        String extensionBin = inputBin.substring(14 + tableItem.m() + tableItem.n());
+        final String extensionBin = inputBin.substring(14 + tableItem.m() + tableItem.n());
 
-        String extension = null;
-        if (tagSize.getSerialBitCount() == 140) {
-            extensionBin = Converter.convertBinToBit(extensionBin, 7, 8);
-            extension = Converter.binToString(extensionBin);
-        } else if (tagSize.getSerialBitCount() == 41) {
-            extension = Converter.binToDec(extensionBin);
-        }
+        final String extension = switch (tagSize.getSerialBitCount()) {
+            // sgln-96
+            case 41 -> BinaryUtils.decodeInteger(extensionBin);
+            // sgln-195
+            case 140 -> BinaryUtils.decodeString(extensionBin, 7);
+            default -> throw new IllegalArgumentException("Unsupported operation");
+        };
 
         final PrefixLength prefixLength = PrefixLength.of(tableItem.l());
 
@@ -175,16 +172,17 @@ public class SGLNParser {
         // remainder = (int) (Math.ceil((tagSize.getValue() / 16.0)) * 16) - tagSize.getValue();
         final int remainder = Converter.remainder(data.tagSize.getValue());
 
-        bin.append(Converter.decToBin(data.tagSize.getHeader(), 8));
-        bin.append(Converter.decToBin(data.filterValue.getValue(), 3));
-        bin.append(Converter.decToBin(data.tableItem.partitionValue(), 3));
-        bin.append(Converter.decToBin(Integer.parseInt(data.companyPrefix), data.tableItem.m()));
-        bin.append(Converter.decToBin(Integer.parseInt(data.locationReference), data.tableItem.n()));
+        bin.append(BinaryUtils.encodeInteger(data.tagSize.getHeader(), 8));
+        bin.append(BinaryUtils.encodeInteger(data.filterValue.getValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.tableItem.partitionValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.companyPrefix, data.tableItem.m()));
+        bin.append(BinaryUtils.encodeInteger(data.locationReference, data.tableItem.n()));
 
-        if (data.tagSize.getValue() == 195) {
-            bin.append(Converter.fill(Converter.StringToBinary(data.extension, 7), data.tagSize.getSerialBitCount() + remainder));
-        } else if (data.tagSize.getValue() == 96) {
-            bin.append(Converter.decToBin(data.extension, data.tagSize.getSerialBitCount() + remainder));
+        // sgln-96
+        if (data.tagSize.getValue() == 96) {
+            bin.append(BinaryUtils.encodeInteger(data.extension, data.tagSize.getSerialBitCount() + remainder));
+        } else if (data.tagSize.getValue() == 195) {
+            bin.append(BinaryUtils.encodeString(data.extension, data.tagSize.getSerialBitCount() + remainder, 7));
         }
 
         return new BinaryResult(bin.toString(), remainder);

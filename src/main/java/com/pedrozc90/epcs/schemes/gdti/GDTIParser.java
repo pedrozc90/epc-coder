@@ -10,7 +10,6 @@ import com.pedrozc90.epcs.schemes.gdti.objects.GDTI;
 import com.pedrozc90.epcs.schemes.gdti.partitionTable.GDTIPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
 import com.pedrozc90.epcs.utils.Converter;
-import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -62,22 +61,20 @@ public class GDTIParser {
         final GDTIFilterValue filterValue = GDTIFilterValue.of(Integer.parseInt(filterDec));
 
         final String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
-        final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
-        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
+        final String companyPrefix = BinaryUtils.decodeInteger(companyPrefixBin, tableItem.l());
 
         final String docTypeBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
-        final String docTypeDec = Converter.binToDec(docTypeBin);
-        final String docType = StringUtils.leftPad(docTypeDec, tableItem.digits(), '0');
+        final String docType = BinaryUtils.decodeInteger(docTypeBin, tableItem.digits());
 
-        String serialBin = inputBin.substring(14 + tableItem.m() + tableItem.n());
+        final String serialBin = inputBin.substring(14 + tableItem.m() + tableItem.n());
 
-        String serial = null;
-        if (tagSize.getSerialBitCount() == 119) {
-            serialBin = Converter.convertBinToBit(serialBin, 7, 8);
-            serial = Converter.binToString(serialBin);
-        } else if (tagSize.getSerialBitCount() == 41) {
-            serial = Converter.binToDec(serialBin);
-        }
+        final String serial = switch (tagSize.getSerialBitCount()) {
+            // gdti-96
+            case 41 -> BinaryUtils.decodeInteger(serialBin);
+            // gdti-174
+            case 119 -> BinaryUtils.decodeString(serialBin, 7);
+            default -> throw new IllegalArgumentException("Unsupported tag size '%s'".formatted(tagSize));
+        };
 
         return new ParsedData(tableItem, tagSize, filterValue, prefixLength, companyPrefix, docType, serial);
     }
@@ -167,16 +164,19 @@ public class GDTIParser {
         // remainder = (int) (Math.ceil((tagSize.getValue() / 16.0)) * 16) - tagSize.getValue();
         final int remainder = Converter.remainder(data.tagSize.getValue());
 
-        bin.append(Converter.decToBin(data.tagSize.getHeader(), 8));
-        bin.append(Converter.decToBin(data.filterValue.getValue(), 3));
-        bin.append(Converter.decToBin(data.tableItem.partitionValue(), 3));
-        bin.append(Converter.decToBin(Integer.parseInt(data.companyPrefix), data.tableItem.m()));
-        bin.append(Converter.decToBin(Integer.parseInt(data.docType), data.tableItem.n()));
+        bin.append(BinaryUtils.encodeInteger(data.tagSize.getHeader(), 8));
+        bin.append(BinaryUtils.encodeInteger(data.filterValue.getValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.tableItem.partitionValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.companyPrefix, data.tableItem.m()));
+        bin.append(BinaryUtils.encodeInteger(data.docType, data.tableItem.n()));
 
+        // gdti-96
         if (data.tagSize.getValue() == 96) {
-            bin.append(Converter.decToBin(data.serial, data.tagSize.getSerialBitCount() + remainder));
-        } else if (data.tagSize.getValue() == 174) {
-            bin.append(Converter.fill(Converter.StringToBinary(data.serial, 7), data.tagSize.getSerialBitCount() + remainder));
+            bin.append(BinaryUtils.encodeInteger(data.serial, data.tagSize.getSerialBitCount() + remainder));
+        }
+        // gdti-198
+        else if (data.tagSize.getValue() == 174) {
+            bin.append(BinaryUtils.encodeString(data.serial, data.tagSize.getSerialBitCount() + remainder, 7));
         }
 
         return new BinaryResult(bin.toString(), remainder);

@@ -2,10 +2,10 @@ package com.pedrozc90.epcs.utils;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BinaryUtilsTest {
 
@@ -63,6 +63,63 @@ public class BinaryUtilsTest {
         assertNotNull(out);
 
         assertEquals(hex, out);
+    }
+
+    @DisplayName("Convert a binary string into a integer string")
+    @ParameterizedTest(name = "[{index}] bin: {0} -> value: {1}")
+    @CsvSource(value = {
+        "000010010101111011111101, 0614141",
+        "1011000100010000001001000001000111111, 95060001343"
+    })
+    public void convertBinaryToInteger(final String bin, final String expected) {
+        final String num = BinaryUtils.decodeInteger(bin, expected.length());
+        assertEquals(expected, num);
+
+        final String out = BinaryUtils.encodeInteger(num, bin.length());
+        assertEquals(bin, out);
+    }
+
+    @DisplayName("Convert a number into a n bit binary")
+    @ParameterizedTest(name = "[{index}] num: {0}")
+    @CsvSource(value = {
+        "614141, 24, 000010010101111011111101",
+        "95060001343, 37, 1011000100010000001001000001000111111"
+    })
+    public void decodeIntegerToBinary(final Long number, final int length, final String expected) {
+        final String bin = BinaryUtils.encodeInteger(number, length);
+        assertTrue(bin.matches("[0-1]+"));
+        assertEquals(expected, bin);
+        assertEquals(length, bin.length());
+
+        final String s = BinaryUtils.decodeInteger(bin);
+        assertEquals(Long.toString(number), s);
+    }
+
+    @DisplayName("Convert a binary string into a string")
+    @ParameterizedTest(name = "[{index}] bin: {0} -> value: {1}")
+    @CsvSource(value = {
+        "000010010101111011111101, 0614141",
+        "1011000100010000001001000001000111111, 95060001343"
+    })
+    public void convertBinaryToString(final String bin, final String expected) {
+        final String result = BinaryUtils.decodeInteger(bin, expected.length());
+        assertEquals(expected, result);
+    }
+
+    @DisplayName("Convert a string into a n bit binary")
+    @ParameterizedTest(name = "[{index}] num: {0}")
+    @CsvSource(value = {
+        "A, 28, 1000001000000000000000000000",
+        "ABC, 28, 1000001100001010000110000000",
+        "A B, 35, 10000010100000100001000000000000000",
+        "A%20B, 35, 10000010100000100001000000000000000",
+        "32a/b, 40, 0110011011001011000010101111110001000000",
+        "32a%2Fb, 40, 0110011011001011000010101111110001000000"
+    })
+    public void encodeStringToBinary(final String value, final int length, final String expected) {
+        final String result = BinaryUtils.encodeString(value, length, 7);
+        assertEquals(expected, result);
+        assertEquals(length, result.length());
     }
 
 }

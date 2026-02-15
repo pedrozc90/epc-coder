@@ -242,37 +242,6 @@ public class Converter {
     }
 
     @Deprecated
-    //http://stackoverflow.com/questions/917163/convert-a-string-like-testing123-to-binary-in-java
-    public static String StringToBinary(String str, int bits) {
-        StringBuilder result = new StringBuilder();
-        String tmpStr;
-        int tmpInt;
-        char[] messChar = str.toCharArray();
-
-        for (char c : messChar) {
-            tmpStr = Integer.toBinaryString(c);
-            tmpInt = tmpStr.length();
-            if (tmpInt != bits) {
-                tmpInt = bits - tmpInt;
-                if (tmpInt == bits) {
-                    result.append(tmpStr);
-                } else if (tmpInt > 0) {
-                    for (int j = 0; j < tmpInt; j++) {
-                        result.append("0");
-                    }
-                    result.append(tmpStr);
-                } else {
-                    System.err.println("argument 'bits' is too small");
-                }
-            } else {
-                result.append(tmpStr);
-            }
-        }
-
-        return result.toString();
-    }
-
-    @Deprecated
     public static String lPadZero(int in, int fill) {
 
         boolean negative = false;
@@ -308,6 +277,37 @@ public class Converter {
         sb.append(in);
 
         return sb.toString();
+    }
+
+    @Deprecated
+    //http://stackoverflow.com/questions/917163/convert-a-string-like-testing123-to-binary-in-java
+    public static String StringToBinary(String str, int bits) {
+        StringBuilder result = new StringBuilder();
+        String tmpStr;
+        int tmpInt;
+        char[] messChar = str.toCharArray();
+
+        for (char c : messChar) {
+            tmpStr = Integer.toBinaryString(c);
+            tmpInt = tmpStr.length();
+            if (tmpInt != bits) {
+                tmpInt = bits - tmpInt;
+                if (tmpInt == bits) {
+                    result.append(tmpStr);
+                } else if (tmpInt > 0) {
+                    for (int j = 0; j < tmpInt; j++) {
+                        result.append("0");
+                    }
+                    result.append(tmpStr);
+                } else {
+                    System.err.println("argument 'bits' is too small");
+                }
+            } else {
+                result.append(tmpStr);
+            }
+        }
+
+        return result.toString();
     }
 
 }

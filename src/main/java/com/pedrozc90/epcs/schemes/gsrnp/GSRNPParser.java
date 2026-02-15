@@ -9,8 +9,6 @@ import com.pedrozc90.epcs.schemes.gsrnp.enums.GSRNPTagSize;
 import com.pedrozc90.epcs.schemes.gsrnp.objects.GSRNP;
 import com.pedrozc90.epcs.schemes.gsrnp.partitionTable.GSRNPPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
-import com.pedrozc90.epcs.utils.Converter;
-import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -63,11 +61,10 @@ public class GSRNPParser {
         final GSRNPFilterValue filterValue = GSRNPFilterValue.of(Integer.parseInt(filterDec));
 
         final String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
-        final String companyPrefixDec = Converter.binToDec(companyPrefixBin); //Long.toString( Long.parseLong(companyPrefixBin, 2) );
-        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
+        final String companyPrefix = BinaryUtils.decodeInteger(companyPrefixBin, tableItem.l());
 
         final String serialWithExtensionBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
-        final String serviceReference = StringUtils.leftPad(Converter.binToDec(serialWithExtensionBin), tableItem.digits(), '0');
+        final String serviceReference = BinaryUtils.decodeInteger(serialWithExtensionBin, tableItem.digits());
 
         return new ParsedData(tableItem, tagSize, filterValue, prefixLength, companyPrefix, serviceReference);
     }
@@ -168,13 +165,12 @@ public class GSRNPParser {
     private String toBinary(final ParsedData data) {
         final StringBuilder bin = new StringBuilder();
 
-        bin.append(Converter.decToBin(data.tagSize.getHeader(), 8));
-        bin.append(Converter.decToBin(data.filterValue.getValue(), 3));
-        bin.append(Converter.decToBin(data.tableItem.partitionValue(), 3));
-        bin.append(Converter.decToBin(Integer.parseInt(data.companyPrefix), data.tableItem.m()));
-        //bin.append( Converter.strZero(BigDec2Bin.dec2bin(serviceReference), tableItem.getN()) );
-        bin.append(Converter.decToBin(Integer.parseInt(data.serviceReference), data.tableItem.n()));
-        bin.append(Converter.decToBin(RESERVED, 24));
+        bin.append(BinaryUtils.encodeInteger(data.tagSize.getHeader(), 8));
+        bin.append(BinaryUtils.encodeInteger(data.filterValue.getValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.tableItem.partitionValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.companyPrefix, data.tableItem.m()));
+        bin.append(BinaryUtils.encodeInteger(data.serviceReference, data.tableItem.n()));
+        bin.append(BinaryUtils.encodeInteger(RESERVED, 24));
 
         return bin.toString();
     }
