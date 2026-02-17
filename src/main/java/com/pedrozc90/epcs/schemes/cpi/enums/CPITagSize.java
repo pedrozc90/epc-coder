@@ -12,7 +12,7 @@ public enum CPITagSize {
 
     BITS_96(96) {
         public Integer getHeader() {
-            return 60;
+            return 0x3C; // 60;
         }
 
         public Integer getSerialBitCount() {
@@ -29,7 +29,7 @@ public enum CPITagSize {
     },
     BITS_VARIABLE(0) {
         public Integer getHeader() {
-            return 61;
+            return 0x3D; // 61;
         }
 
         public Integer getSerialBitCount() {

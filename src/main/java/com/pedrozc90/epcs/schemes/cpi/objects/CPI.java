@@ -1,23 +1,33 @@
 package com.pedrozc90.epcs.schemes.cpi.objects;
 
-import com.pedrozc90.epcs.objects.Base;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.pedrozc90.epcs.objects.Epc;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class CPI extends Base {
+public record CPI(
+    String tagSize,
+    String filterValue,
+    String partitionValue,
+    String prefixLength,
+    String companyPrefix,
+    String componentPartReference,
+    String serial,
+    String epcPureIdentityURI,
+    String epcTagURI,
+    String epcRawURI,
+    String binary,
+    String rfidTag
+) implements Epc {
 
-    private static final String SCHEMA = "cpi";
+    public static final String SCHEME = "cpi";
+    public static final String IDENTIFIER = "AI 8010 + AI 8011";
 
-    private String componentPartReference;
-    private String serial;
-
-    public CPI() {
-        super(SCHEMA);
+    @Override
+    public String epcScheme() {
+        return SCHEME;
     }
+
+    @Override
+    public String applicationIdentifier() {
+        return IDENTIFIER;
+    }
+
 }

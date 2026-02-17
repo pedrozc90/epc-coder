@@ -180,17 +180,17 @@ public class BinaryUtils {
     }
 
     /**
-     * Decode a binary string to a alphanumeric string using GS1 String Decoding Method.
+     * Encodes an alphanumeric string to a binary string using GS1 String Decoding Method.
      *
-     * @param binary - binary string to be decoded.
+     * @param value - binary string to be decoded.
      * @param bits   - encoding bits, 6 bits or 7 bits
      * @return decoded alphanumeric string (may contain %XX escape sequence)
      * @throws IllegalArgumentException if validation fails
      */
-    public static String encodeString(final String binary, final int length, final int bits) {
+    public static String encodeString(final String value, final int length, final int bits) {
         return switch (bits) {
-            case 6 -> Encoding6Bit.encode(binary);
-            case 7 -> Encoding7Bit.encode(binary, length);
+            case 6 -> Encoding6Bit.encode(value);
+            case 7 -> Encoding7Bit.encode(value, length);
             default -> throw new IllegalArgumentException("Unsupported '%d' bit encoding".formatted(bits));
         };
     }

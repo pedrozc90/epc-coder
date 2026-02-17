@@ -126,22 +126,22 @@ public class GSRNParser {
 
         final Integer checkDigit = getCheckDigit(data.companyPrefix, data.serviceReference);
 
-        final GSRN gsrn = new GSRN();
-        // gsrn.setEpcScheme("gsrn");
-        gsrn.setApplicationIdentifier("AI 8018");
-        gsrn.setTagSize(Integer.toString(data.tagSize.getValue()));
-        gsrn.setFilterValue(Integer.toString(data.filterValue.getValue()));
-        gsrn.setPartitionValue(Integer.toString(data.tableItem.partitionValue()));
-        gsrn.setPrefixLength(Integer.toString(data.prefixLength.getValue()));
-        gsrn.setCompanyPrefix(data.companyPrefix);
-        gsrn.setServiceReference(data.serviceReference);
-        gsrn.setCheckDigit(Integer.toString(checkDigit));
-        gsrn.setEpcPureIdentityURI("urn:epc:id:gsrn:%s.%s".formatted(data.companyPrefix, data.serviceReference));
-        gsrn.setEpcTagURI("urn:epc:tag:gsrn-%s:%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.serviceReference));
-        gsrn.setEpcRawURI("urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue(), outputHex));
-        gsrn.setBinary(outputBin);
-        gsrn.setRfidTag(outputHex);
-        return gsrn;
+        return new GSRN(
+            // "gsrn",
+            // "AI 8018",
+            Integer.toString(data.tagSize.getValue()),
+            Integer.toString(data.filterValue.getValue()),
+            Integer.toString(data.tableItem.partitionValue()),
+            Integer.toString(data.prefixLength.getValue()),
+            data.companyPrefix,
+            data.serviceReference,
+            Integer.toString(checkDigit),
+            "urn:epc:id:gsrn:%s.%s".formatted(data.companyPrefix, data.serviceReference),
+            "urn:epc:tag:gsrn-%s:%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.serviceReference),
+            "urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue(), outputHex),
+            outputBin,
+            outputHex
+        );
     }
 
     private Integer getCheckDigit(final String companyPrefix, final String serviceReference) {

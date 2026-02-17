@@ -132,24 +132,23 @@ public class SSCCParser {
         final String outputBin = toBinary(data);
         final String outputHex = BinaryUtils.toHex(outputBin);
 
-        final SSCC sscc = new SSCC();
-        // sscc.setEpcScheme("sscc");
-        sscc.setApplicationIdentifier("AI 00");
-        sscc.setTagSize(Integer.toString(data.tagSize.getValue()));
-        sscc.setFilterValue(Integer.toString(data.filterValue.getValue()));
-        sscc.setPartitionValue(Integer.toString(data.tableItem.partitionValue()));
-        sscc.setPrefixLength(Integer.toString(data.prefixLength.getValue()));
-        sscc.setCompanyPrefix(data.companyPrefix);
-        sscc.setExtensionDigit(Integer.toString(data.extensionDigit.getValue()));
-        sscc.setSerial(data.serial);
-        sscc.setCheckDigit(Integer.toString(checkDigit));
-        sscc.setEpcPureIdentityURI("urn:epc:id:sscc:%s.%s%s".formatted(data.companyPrefix, data.extensionDigit.getValue(), data.serial));
-        sscc.setEpcTagURI("urn:epc:tag:sscc-%s:%s.%s.%s%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.extensionDigit.getValue(), data.serial));
-        sscc.setEpcRawURI("urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue(), outputHex));
-        sscc.setBinary(outputBin);
-        sscc.setRfidTag(outputHex);
-
-        return sscc;
+        return new SSCC(
+            // "sscc",
+            // "AI 00",
+            Integer.toString(data.tagSize.getValue()),
+            Integer.toString(data.filterValue.getValue()),
+            Integer.toString(data.tableItem.partitionValue()),
+            Integer.toString(data.prefixLength.getValue()),
+            data.companyPrefix,
+            Integer.toString(data.extensionDigit.getValue()),
+            data.serial,
+            Integer.toString(checkDigit),
+            "urn:epc:id:sscc:%s.%s%s".formatted(data.companyPrefix, data.extensionDigit.getValue(), data.serial),
+            "urn:epc:tag:sscc-%s:%s.%s.%s%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.extensionDigit.getValue(), data.serial),
+            "urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue(), outputHex),
+            outputBin,
+            outputHex
+        );
     }
 
     private String toBinary(final ParsedData data) {

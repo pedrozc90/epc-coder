@@ -25,6 +25,15 @@
 - Internal / reserved
     - `GID`: General Identifier (legacy / EPC-global internal)
 
+## Decoding
+
+Input `00110000 01001001 00000000 00000001 ... (96 bits total)`
+```
+Binary: 00110000 01001001 00000000...
+Header: 00110000 (first 8 bits)
+Hex:    0x30
+```
+
 ## String encoding
 
 │ EPC Scheme      │ Bit Length   │ Serial Encoding   │

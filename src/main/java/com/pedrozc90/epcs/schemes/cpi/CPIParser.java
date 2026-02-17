@@ -10,6 +10,7 @@ import com.pedrozc90.epcs.schemes.cpi.objects.CPI;
 import com.pedrozc90.epcs.schemes.cpi.partitionTable.CPIPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
 import com.pedrozc90.epcs.utils.Converter;
+import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +44,7 @@ public class CPIParser {
         return encode(steps);
     }
 
-    private ParsedData decodeRFIDTag(String rfidTag) {
+    private ParsedData decodeRFIDTag(final String rfidTag) {
         final String inputBin = BinaryUtils.toBinary(rfidTag);
 
         final String headerBin = inputBin.substring(0, 8);
@@ -63,39 +64,47 @@ public class CPIParser {
         final String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
         final String companyPrefix = BinaryUtils.decodeInteger(companyPrefixBin, tableItem.l());
 
-        String componentPartReferenceBin = null;
-        String componentPartReference = null;
-        String serialBin = null;
-
         // cpi-96
-        if (tagSize.getValue() == 96) {
-            componentPartReferenceBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
-            componentPartReference = BinaryUtils.decodeInteger(componentPartReferenceBin);
-            serialBin = inputBin.substring(14 + tableItem.m() + tableItem.n());
-        }
-        // cpi-var
-        else {
-            String componentPartReferenceAndSerialBin = inputBin.substring(14 + tableItem.m());
-
-            StringBuilder decodeComponentPartReference = new StringBuilder();
-            final List<String> parts = Converter.chunk(componentPartReferenceAndSerialBin, 6);
-            for (String part : parts) {
-                if (part.equals("000000")) {
-                    break;
-                }
-                decodeComponentPartReference.append(part);
+        final DecodedData decoded = switch (tagSize) {
+            case BITS_96 -> {
+                final String componentPartReferenceBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
+                final String componentPartReference = BinaryUtils.decodeInteger(componentPartReferenceBin);
+                final String serialBin = inputBin.substring(14 + tableItem.m() + tableItem.n());
+                yield new DecodedData(componentPartReferenceBin, componentPartReference, serialBin);
             }
+            // cpi-var
+            case BITS_VARIABLE -> {
+                final int componentPartReferenceStart = 14 + tableItem.m();
+                final String componentPartReferenceAndSerialBin = inputBin.substring(componentPartReferenceStart);
 
-            componentPartReferenceBin = decodeComponentPartReference.toString();
-            int posSerial = 14 + tableItem.m() + componentPartReferenceBin.length() + 6;
-            componentPartReferenceBin = Converter.convertBinToBit(componentPartReferenceBin, 6, 8);
-            componentPartReference = Converter.binToString(componentPartReferenceBin);
-            serialBin = inputBin.substring(posSerial, posSerial + tagSize.getSerialBitCount());
-        }
+                // find the terminator "000000"
+                final StringBuilder tmpBin = new StringBuilder();
+                final List<String> parts = StringUtils.chunk(componentPartReferenceAndSerialBin, 6);
+                int chunksRead = 0;
+                for (String part : parts) {
+                    if (part.equals("000000")) {
+                        chunksRead++;
+                        break;
+                    }
+                    tmpBin.append(part);
+                    chunksRead++;
+                }
 
-        final String serial = BinaryUtils.decodeInteger(serialBin);
+                // componentPartReferenceBin = Converter.convertBinToBit(componentPartReferenceBin, 6, 8);
+                // componentPartReference = Converter.binToString(componentPartReferenceBin);
+                final String componentPartReferenceBin = tmpBin.toString();
+                final String componentPartReference = BinaryUtils.decodeString(componentPartReferenceBin, 6);
 
-        return new ParsedData(tableItem, tagSize, filterValue, prefixLength, companyPrefix, componentPartReference, serial);
+                final int posSerial = componentPartReferenceStart + (chunksRead * 6);
+                final String serialBin = inputBin.substring(posSerial, posSerial + tagSize.getSerialBitCount());
+
+                yield new DecodedData(componentPartReferenceBin, componentPartReference, serialBin);
+            }
+        };
+
+        final String serial = BinaryUtils.decodeInteger(decoded.serialBin);
+
+        return new ParsedData(tableItem, tagSize, filterValue, prefixLength, companyPrefix, decoded.componentPartReference, serial);
     }
 
     private ParsedData decodeEpcTagURI(final String epcTagURI) {
@@ -104,13 +113,12 @@ public class CPIParser {
             throw new IllegalArgumentException("Epc Tag URI is invalid");
         }
 
-        CPITagSize tagSize;
         final String size = matcher.group(2);
-        if (size.equals("var")) {
-            tagSize = CPITagSize.of(0);
-        } else {
-            tagSize = CPITagSize.of(Integer.parseInt(size));
-        }
+        final CPITagSize tagSize = switch (size) {
+            case "96" -> CPITagSize.BITS_96;
+            case "var" -> CPITagSize.BITS_VARIABLE;
+            default -> throw new IllegalArgumentException("Unsupported tag size '%s'".formatted(size));
+        };
 
         final CPIFilterValue filterValue = CPIFilterValue.of(Integer.parseInt(matcher.group(3)));
         final String companyPrefix = matcher.group(4);
@@ -172,18 +180,20 @@ public class CPIParser {
         bin.append(BinaryUtils.encodeInteger(data.companyPrefix, data.tableItem.m()));
 
         // cpi-96
-        if (data.tagSize == CPITagSize.BITS_96) {
-            bin.append(BinaryUtils.encodeInteger(data.componentPartReference, data.tableItem.n()));
-        }
-        // cpi-var
-        else {
-            // bin.append(Converter.StringToBinary(componentPartReference, 6));
-            bin.append(BinaryUtils.encodeString(data.componentPartReference, 54, 7));
-            bin.append("000000");
+        switch (data.tagSize) {
+            case BITS_96 -> {
+                bin.append(BinaryUtils.encodeInteger(data.componentPartReference, data.tableItem.n()));
+                bin.append(BinaryUtils.encodeInteger(data.serial, data.tagSize.getSerialBitCount()));
+            }
+            // cpi-var
+            case BITS_VARIABLE -> {
+                bin.append(BinaryUtils.encodeString(data.componentPartReference, 6 * data.componentPartReference.length(), 6));
+                bin.append("000000");
+                bin.append(BinaryUtils.encodeInteger(data.serial, data.tagSize.getSerialBitCount()));
+            }
         }
 
-        bin.append(BinaryUtils.encodeInteger(data.serial, data.tagSize.getSerialBitCount()));
-
+        // Calculate remainder AFTER building the complete binary
         // remainder = (int) (Math.ceil((bin.length() / 16.0)) * 16) - bin.length();
         final int remainder = Converter.remainder(bin.length());
         if (remainder > 0) {
@@ -203,22 +213,22 @@ public class CPIParser {
 
         final String tagSize = (data.tagSize.getValue() == 0) ? "var" : Integer.toString(data.tagSize.getValue());
 
-        final CPI cpi = new CPI();
-        // cpi.setEpcScheme("cpi");
-        cpi.setApplicationIdentifier("AI 8010 + AI 8011");
-        cpi.setTagSize(tagSize);
-        cpi.setFilterValue(Integer.toString(data.filterValue.getValue()));
-        cpi.setPartitionValue(Integer.toString(data.tableItem.partitionValue()));
-        cpi.setPrefixLength(Integer.toString(data.prefixLength.getValue()));
-        cpi.setCompanyPrefix(data.companyPrefix);
-        cpi.setComponentPartReference(data.componentPartReference);
-        cpi.setSerial(data.serial);
-        cpi.setEpcPureIdentityURI("urn:epc:id:cpi:%s.%s.%s".formatted(data.companyPrefix, data.componentPartReference, data.serial));
-        cpi.setEpcTagURI("urn:epc:tag:cpi-%s:%s.%s.%s.%s".formatted(tagSize, data.filterValue.getValue(), data.companyPrefix, data.componentPartReference, data.serial));
-        cpi.setEpcRawURI("urn:epc:raw:%s.x%s".formatted(outputBin.length(), outputHex));
-        cpi.setBinary(outputBin);
-        cpi.setRfidTag(outputHex);
-        return cpi;
+        return new CPI(
+            // "cpi",
+            // "AI 8010 + AI 8011",
+            tagSize,
+            Integer.toString(data.filterValue.getValue()),
+            Integer.toString(data.tableItem.partitionValue()),
+            Integer.toString(data.prefixLength.getValue()),
+            data.companyPrefix,
+            data.componentPartReference,
+            data.serial,
+            "urn:epc:id:cpi:%s.%s.%s".formatted(data.companyPrefix, data.componentPartReference, data.serial),
+            "urn:epc:tag:cpi-%s:%s.%s.%s.%s".formatted(tagSize, data.filterValue.getValue(), data.companyPrefix, data.componentPartReference, data.serial),
+            "urn:epc:raw:%s.x%s".formatted(outputBin.length(), outputHex),
+            outputBin,
+            outputHex
+        );
     }
 
     /* --- Validation --- */
@@ -295,6 +305,14 @@ public class CPIParser {
     private record BinaryResult(
         String binary,
         int remainder
+    ) {
+        // empty
+    }
+
+    private record DecodedData(
+        String componentPartReferenceBin,
+        String componentPartReference,
+        String serialBin
     ) {
         // empty
     }

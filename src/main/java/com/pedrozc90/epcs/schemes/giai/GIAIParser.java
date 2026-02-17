@@ -134,21 +134,21 @@ public class GIAIParser {
 
         final int remainder = result.remainder;
 
-        final GIAI giai = new GIAI();
-        // giai.setEpcScheme("giai");
-        giai.setApplicationIdentifier("AI 8004");
-        giai.setTagSize(Integer.toString(data.tagSize.getValue()));
-        giai.setFilterValue(Integer.toString(data.filterValue.getValue()));
-        giai.setPartitionValue(Integer.toString(data.tableItem.partitionValue()));
-        giai.setPrefixLength(Integer.toString(data.prefixLength.getValue()));
-        giai.setCompanyPrefix(data.companyPrefix);
-        giai.setIndividualAssetReference(data.individualAssetReference);
-        giai.setEpcPureIdentityURI("urn:epc:id:giai:%s.%s".formatted(data.companyPrefix, data.individualAssetReference));
-        giai.setEpcTagURI("urn:epc:tag:giai-%s:%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.individualAssetReference));
-        giai.setEpcRawURI("urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + remainder, outputHex));
-        giai.setBinary(outputBin);
-        giai.setRfidTag(outputHex);
-        return giai;
+        return new GIAI(
+            // "giai",
+            // "AI 8004",
+            Integer.toString(data.tagSize.getValue()),
+            Integer.toString(data.filterValue.getValue()),
+            Integer.toString(data.tableItem.partitionValue()),
+            Integer.toString(data.prefixLength.getValue()),
+            data.companyPrefix,
+            data.individualAssetReference,
+            "urn:epc:id:giai:%s.%s".formatted(data.companyPrefix, data.individualAssetReference),
+            "urn:epc:tag:giai-%s:%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.individualAssetReference),
+            "urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + remainder, outputHex),
+            outputBin,
+            outputHex
+        );
     }
 
     private BinaryResult toBinary(final ParsedData data) {

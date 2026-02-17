@@ -140,23 +140,23 @@ public class GRAIParser {
 
         final Integer checkDigit = getCheckDigit(data.companyPrefix, data.assetType);
 
-        final GRAI grai = new GRAI();
-        // grai.setEpcScheme("grai");
-        grai.setApplicationIdentifier("AI 8003");
-        grai.setTagSize(Integer.toString(data.tagSize.getValue()));
-        grai.setFilterValue(Integer.toString(data.filterValue.getValue()));
-        grai.setPartitionValue(Integer.toString(data.tableItem.partitionValue()));
-        grai.setPrefixLength(Integer.toString(data.prefixLength.getValue()));
-        grai.setCompanyPrefix(data.companyPrefix);
-        grai.setAssetType(data.assetType);
-        grai.setSerial(data.serial);
-        grai.setCheckDigit(Integer.toString(checkDigit));
-        grai.setEpcPureIdentityURI("urn:epc:id:grai:%s.%s.%s".formatted(data.companyPrefix, data.assetType, data.serial));
-        grai.setEpcTagURI("urn:epc:tag:grai-%s:%s.%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.assetType, data.serial));
-        grai.setEpcRawURI("urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + remainder, outputHex));
-        grai.setBinary(outputBin);
-        grai.setRfidTag(outputHex);
-        return grai;
+        return new GRAI(
+            // "grai",
+            // "AI 8003",
+            Integer.toString(data.tagSize.getValue()),
+            Integer.toString(data.filterValue.getValue()),
+            Integer.toString(data.tableItem.partitionValue()),
+            Integer.toString(data.prefixLength.getValue()),
+            data.companyPrefix,
+            data.assetType,
+            data.serial,
+            Integer.toString(checkDigit),
+            "urn:epc:id:grai:%s.%s.%s".formatted(data.companyPrefix, data.assetType, data.serial),
+            "urn:epc:tag:grai-%s:%s.%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.assetType, data.serial),
+            "urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + remainder, outputHex),
+            outputBin,
+            outputHex
+        );
     }
 
     private BinaryResult toBinary(final ParsedData data) {

@@ -167,10 +167,7 @@ public class Encoding6Bit {
             for (int j = 0; j < 6; j++) {
                 char bit = binary.charAt(i + j);
                 if (bit != '0' && bit != '1') {
-                    throw new IllegalArgumentException(
-                        "Invalid binary character '%c' at position %d"
-                            .formatted(bit, i + j)
-                    );
+                    throw new IllegalArgumentException("Invalid binary character '%c' at position %d".formatted(bit, i + j));
                 }
                 code = (code << 1) | (bit - '0');
             }

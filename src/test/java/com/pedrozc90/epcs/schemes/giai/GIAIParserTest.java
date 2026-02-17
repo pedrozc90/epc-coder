@@ -82,16 +82,16 @@ public class GIAIParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedIndividualAssetReference, result.getIndividualAssetReference());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedIndividualAssetReference, result.individualAssetReference());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     @DisplayName("Decode RFID Tag")
@@ -114,16 +114,16 @@ public class GIAIParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedIndividualAssetReference, result.getIndividualAssetReference());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedIndividualAssetReference, result.individualAssetReference());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     @DisplayName("Decode Epc Tag URI")
@@ -146,16 +146,16 @@ public class GIAIParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedIndividualAssetReference, result.getIndividualAssetReference());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedIndividualAssetReference, result.individualAssetReference());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     @DisplayName("Decode Epc Pure Identity URI")
@@ -183,16 +183,16 @@ public class GIAIParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedIndividualAssetReference, result.getIndividualAssetReference());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedIndividualAssetReference, result.individualAssetReference());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
 }

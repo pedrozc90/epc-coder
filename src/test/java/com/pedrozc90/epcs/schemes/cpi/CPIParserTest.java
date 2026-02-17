@@ -28,6 +28,7 @@ public class CPIParserTest {
                 "0614141",
                 "12345",
                 "400",
+                "001111000011010000100101011110111111010000000000000110000001110010000000000000000000000110010000",
                 96
             ),
             Arguments.arguments(
@@ -41,6 +42,7 @@ public class CPIParserTest {
                 "9521141",
                 "98765",
                 "12345",
+                "001111000111011001000101000111111101010000000000110000001110011010000000000000000011000000111001",
                 96
             ),
             Arguments.arguments(
@@ -54,6 +56,7 @@ public class CPIParserTest {
                 "9521141",
                 "5PQ7/Z43",
                 "12345",
+                "001111010111011001000101000111111101011101010100000100011101111011110110101101001100110000000000000000000000000000000011000000111001000000000000",
                 144
             ),
             Arguments.arguments(
@@ -62,24 +65,41 @@ public class CPIParserTest {
                 "urn:epc:id:cpi:0614141.123ABX.123456789",
                 "cpi",
                 "var",
-                "3",
+                "7",
                 "7",
                 "0614141",
                 "123ABX",
                 "123456789",
+                "00111101111101000010010101111011111101110001110010110011000001000010011000000000000000000000011101011011110011010001010100000000",
                 128
             ),
             Arguments.arguments(
                 "3DF4257BF71CB30420C000075BCD1500",
-                "urn:epc:tag:cpi-var:7.0614141.123ABC.12345678",
+                "urn:epc:tag:cpi-var:7.0614141.123ABC.123456789",
                 "urn:epc:id:cpi:0614141.123ABC.123456789",
+                "cpi",
+                "var",
+                "7",
+                "7",
+                "0614141",
+                "123ABC",
+                "123456789",
+                "00111101111101000010010101111011111101110001110010110011000001000010000011000000000000000000011101011011110011010001010100000000",
+                128
+            )
+            ,
+            Arguments.arguments(
+                "3D74257BF71CA30420C000075BCD1500",
+                "urn:epc:tag:cpi-var:3.0614141.12%23ABC.123456789",
+                "urn:epc:id:cpi:0614141.12%23ABC.123456789",
                 "cpi",
                 "var",
                 "3",
                 "7",
                 "0614141",
-                "123ABC",
-                "12345678",
+                "12%23ABC",
+                "123456789",
+                "00111101011101000010010101111011111101110001110010100011000001000010000011000000000000000000011101011011110011010001010100000000",
                 128
             )
         );
@@ -99,6 +119,7 @@ public class CPIParserTest {
         final String expectedCompanyPrefix,
         final String expectedComponentPartReference,
         final String expectedSerial,
+        final String expectedBinary,
         final Integer expectedBitCount
     ) throws Exception {
         final CPITagSize tagSize = CPITagSize.of(expectedBitCount);
@@ -112,17 +133,18 @@ public class CPIParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedComponentPartReference, result.getComponentPartReference());
-        assertEquals(expectedSerial, result.getSerial());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedComponentPartReference, result.componentPartReference());
+        assertEquals(expectedSerial, result.serial());
+        assertEquals(expectedBinary, result.binary());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     @DisplayName("Decode RFID Tag")
@@ -139,6 +161,7 @@ public class CPIParserTest {
         final String expectedCompanyPrefix,
         final String expectedComponentPartReference,
         final String expectedSerial,
+        final String expectedBinary,
         final Integer expectedBitCount
     ) throws Exception {
         final CPI result = CPIParser.Builder()
@@ -146,17 +169,18 @@ public class CPIParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedComponentPartReference, result.getComponentPartReference());
-        assertEquals(expectedSerial, result.getSerial());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedComponentPartReference, result.componentPartReference());
+        assertEquals(expectedSerial, result.serial());
+        assertEquals(expectedBinary, result.binary());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     @DisplayName("Decode Epc Tag URI")
@@ -173,6 +197,7 @@ public class CPIParserTest {
         final String expectedCompanyPrefix,
         final String expectedComponentPartReference,
         final String expectedSerial,
+        final String expectedBinary,
         final Integer expectedBitCount
     ) throws Exception {
         final CPI result = CPIParser.Builder()
@@ -180,17 +205,18 @@ public class CPIParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedComponentPartReference, result.getComponentPartReference());
-        assertEquals(expectedSerial, result.getSerial());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedComponentPartReference, result.componentPartReference());
+        assertEquals(expectedSerial, result.serial());
+        assertEquals(expectedBinary, result.binary());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     @DisplayName("Decode EpcPureIdentityURI")
@@ -207,6 +233,7 @@ public class CPIParserTest {
         final String expectedCompanyPrefix,
         final String expectedComponentPartReference,
         final String expectedSerial,
+        final String expectedBinary,
         final Integer expectedBitCount
     ) throws Exception {
         final CPITagSize tagSize = CPITagSize.of(expectedBitCount);
@@ -219,17 +246,18 @@ public class CPIParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedComponentPartReference, result.getComponentPartReference());
-        assertEquals(expectedSerial, result.getSerial());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedComponentPartReference, result.componentPartReference());
+        assertEquals(expectedSerial, result.serial());
+        assertEquals(expectedBinary, result.binary());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
 }

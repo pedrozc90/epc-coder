@@ -82,19 +82,19 @@ public class SSCCParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedPartitionValue, result.getPartitionValue());
-        assertEquals(expectedCheckDigit, result.getCheckDigit());
-        assertEquals(expectedExtensionDigit, result.getExtensionDigit());
-        assertEquals(expectedSerial, result.getSerial());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedPartitionValue, result.partitionValue());
+        assertEquals(expectedCheckDigit, result.checkDigit());
+        assertEquals(expectedExtensionDigit, result.extensionDigit());
+        assertEquals(expectedSerial, result.serial());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     @DisplayName("Decode RFIDTag")
@@ -120,19 +120,19 @@ public class SSCCParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedPartitionValue, result.getPartitionValue());
-        assertEquals(expectedCheckDigit, result.getCheckDigit());
-        assertEquals(expectedExtensionDigit, result.getExtensionDigit());
-        assertEquals(expectedSerial, result.getSerial());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedPartitionValue, result.partitionValue());
+        assertEquals(expectedCheckDigit, result.checkDigit());
+        assertEquals(expectedExtensionDigit, result.extensionDigit());
+        assertEquals(expectedSerial, result.serial());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     @DisplayName("Decode Epc Tag URI")
@@ -158,19 +158,19 @@ public class SSCCParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedPartitionValue, result.getPartitionValue());
-        assertEquals(expectedCheckDigit, result.getCheckDigit());
-        assertEquals(expectedExtensionDigit, result.getExtensionDigit());
-        assertEquals(expectedSerial, result.getSerial());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedPartitionValue, result.partitionValue());
+        assertEquals(expectedCheckDigit, result.checkDigit());
+        assertEquals(expectedExtensionDigit, result.extensionDigit());
+        assertEquals(expectedSerial, result.serial());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     @DisplayName("Decode Epc Pure Identity URI")
@@ -201,19 +201,19 @@ public class SSCCParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedPartitionValue, result.getPartitionValue());
-        assertEquals(expectedCheckDigit, result.getCheckDigit());
-        assertEquals(expectedExtensionDigit, result.getExtensionDigit());
-        assertEquals(expectedSerial, result.getSerial());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedPartitionValue, result.partitionValue());
+        assertEquals(expectedCheckDigit, result.checkDigit());
+        assertEquals(expectedExtensionDigit, result.extensionDigit());
+        assertEquals(expectedSerial, result.serial());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
 }

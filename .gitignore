@@ -5,3 +5,5 @@
 
 # Maven
 target/
+src/main/java/com/pedrozc90/epcs/ignored/*
+src/test/java/com/pedrozc90/epcs/benchmark/*

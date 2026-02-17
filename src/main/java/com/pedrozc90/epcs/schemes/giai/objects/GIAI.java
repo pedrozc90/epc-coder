@@ -1,23 +1,32 @@
 package com.pedrozc90.epcs.schemes.giai.objects;
 
-import com.pedrozc90.epcs.objects.Base;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.pedrozc90.epcs.objects.Epc;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class GIAI extends Base {
+public record GIAI(
+    String tagSize,
+    String filterValue,
+    String partitionValue,
+    String prefixLength,
+    String companyPrefix,
+    String individualAssetReference,
+    String epcPureIdentityURI,
+    String epcTagURI,
+    String epcRawURI,
+    String binary,
+    String rfidTag
+) implements Epc {
 
-    private static final String SCHEMA = "giai";
+    private static final String SCHEME = "giai";
+    private static final String IDENTIFIER = "AI 8004";
 
-    private String individualAssetReference;
+    @Override
+    public String epcScheme() {
+        return SCHEME;
+    }
 
-    public GIAI() {
-        super(SCHEMA);
+    @Override
+    public String applicationIdentifier() {
+        return IDENTIFIER;
     }
 
 }
