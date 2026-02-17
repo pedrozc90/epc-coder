@@ -2,6 +2,7 @@ package com.pedrozc90.epcs.schemes.grai;
 
 import com.pedrozc90.epcs.exception.EpcParseException;
 import com.pedrozc90.epcs.objects.TableItem;
+import com.pedrozc90.epcs.schemes.EpcParser;
 import com.pedrozc90.epcs.schemes.PrefixLength;
 import com.pedrozc90.epcs.schemes.grai.enums.GRAIFilterValue;
 import com.pedrozc90.epcs.schemes.grai.enums.GRAIHeader;
@@ -9,14 +10,11 @@ import com.pedrozc90.epcs.schemes.grai.enums.GRAITagSize;
 import com.pedrozc90.epcs.schemes.grai.objects.GRAI;
 import com.pedrozc90.epcs.schemes.grai.partitionTable.GRAIPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
-import com.pedrozc90.epcs.utils.Converter;
-import com.pedrozc90.epcs.utils.StringUtils;
 
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GRAIParser {
+public class GRAIParser implements EpcParser<GRAI> {
 
     private static final Pattern TAG_URI_PATTERN = Pattern.compile("^(urn:epc:tag:grai-)(96|170):([0-7])\\.(\\d+)\\.(\\d+)\\.(.+)$");
     private static final Pattern PURE_IDENTITY_URI_PATTERN = Pattern.compile("^(urn:epc:id:grai):(\\d+)\\.(\\d+)\\.(.+)$");
@@ -62,22 +60,20 @@ public class GRAIParser {
         final GRAIFilterValue filterValue = GRAIFilterValue.of(Integer.parseInt(filterDec));
 
         final String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
-        final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
-        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
+        final String companyPrefix = BinaryUtils.decodeInteger(companyPrefixBin, tableItem.l());
 
         final String assetTypeBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
-        final String assetTypeDec = Converter.binToDec(assetTypeBin);
-        final String assetType = StringUtils.leftPad(assetTypeDec, tableItem.digits(), '0');
+        final String assetType = BinaryUtils.decodeInteger(assetTypeBin, tableItem.digits());
 
-        String serialBin = inputBin.substring(14 + tableItem.m() + tableItem.n());
+        final String serialBin = inputBin.substring(14 + tableItem.m() + tableItem.n());
 
-        String serial = null;
-        if (tagSize.getSerialBitCount() == 112) {
-            serialBin = Converter.convertBinToBit(serialBin, 7, 8);
-            serial = Converter.binToString(serialBin);
-        } else if (tagSize.getSerialBitCount() == 38) {
-            serial = Converter.binToDec(serialBin);
-        }
+        final String serial = switch (tagSize.getSerialBitCount()) {
+            // grai-96
+            case 38 -> BinaryUtils.decodeInteger(serialBin);
+            // grai-198
+            case 112 -> BinaryUtils.decodeString(serialBin, 7);
+            default -> throw new IllegalArgumentException("Unsupported tag size '%s'".formatted(tagSize));
+        };
 
         return new ParsedData(tableItem, tagSize, filterValue, prefixLength, companyPrefix, assetType, serial);
     }
@@ -123,8 +119,6 @@ public class GRAIParser {
 
     private ParsedData encode(final Steps steps) {
         final PrefixLength prefixLength = PrefixLength.of(steps.companyPrefix.length());
-        validateCompanyPrefix(prefixLength);
-
         final TableItem tableItem = partitionTable.getPartitionByL(prefixLength.getValue());
 
         validateAssetType(tableItem, steps.assetType);
@@ -166,23 +160,27 @@ public class GRAIParser {
         final StringBuilder bin = new StringBuilder();
 
         // remainder = (int) (Math.ceil((tagSize.getValue() / 16.0)) * 16) - tagSize.getValue();
-        final int remainder = Converter.remainder(data.tagSize.getValue());
+        final int remainder = remainder(data.tagSize.getValue());
 
-        bin.append(Converter.decToBin(data.tagSize.getHeader(), 8));
-        bin.append(Converter.decToBin(data.filterValue.getValue(), 3));
-        bin.append(Converter.decToBin(data.tableItem.partitionValue(), 3));
-        bin.append(Converter.decToBin(Integer.parseInt(data.companyPrefix), data.tableItem.m()));
-        bin.append(Converter.decToBin(Integer.parseInt(data.assetType), data.tableItem.n()));
+        bin.append(BinaryUtils.encodeInteger(data.tagSize.getHeader(), 8));
+        bin.append(BinaryUtils.encodeInteger(data.filterValue.getValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.tableItem.partitionValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.companyPrefix, data.tableItem.m()));
+        bin.append(BinaryUtils.encodeInteger(data.assetType, data.tableItem.n()));
 
-        if (data.tagSize.getValue() == 170) {
-            bin.append(Converter.fill(Converter.StringToBinary(data.serial, 7), data.tagSize.getSerialBitCount() + remainder));
-        } else if (data.tagSize.getValue() == 96) {
-            bin.append(Converter.decToBin(data.serial, data.tagSize.getSerialBitCount() + remainder));
+        // grai-96
+        if (data.tagSize.getValue() == 96) {
+            bin.append(BinaryUtils.encodeInteger(data.serial, data.tagSize.getSerialBitCount() + remainder));
+        }
+        // grai-170
+        else if (data.tagSize.getValue() == 170) {
+            bin.append(BinaryUtils.encodeString(data.serial, data.tagSize.getSerialBitCount() + remainder, 7));
         }
 
         return new BinaryResult(bin.toString(), remainder);
     }
 
+    /* --- Validations --- */
     private Integer getCheckDigit(final String companyPrefix, final String assetType) {
         final String value = companyPrefix + assetType;
 
@@ -197,13 +195,6 @@ public class GRAIParser {
             % 10)) % 10;
 
         return d13;
-    }
-
-    private void validateCompanyPrefix(final PrefixLength prefixLength) {
-        final Optional<PrefixLength> optPrefixLength = Optional.ofNullable(prefixLength);
-        if (optPrefixLength.isEmpty()) {
-            throw new IllegalArgumentException("Company Prefix is invalid. Length not found in the partition table");
-        }
     }
 
     private void validateAssetType(final TableItem tableItem, final String assetType) {

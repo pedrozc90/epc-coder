@@ -2,6 +2,7 @@ package com.pedrozc90.epcs.schemes.gsrn;
 
 import com.pedrozc90.epcs.exception.EpcParseException;
 import com.pedrozc90.epcs.objects.TableItem;
+import com.pedrozc90.epcs.schemes.EpcParser;
 import com.pedrozc90.epcs.schemes.PrefixLength;
 import com.pedrozc90.epcs.schemes.gsrn.enums.GSRNFilterValue;
 import com.pedrozc90.epcs.schemes.gsrn.enums.GSRNHeader;
@@ -9,14 +10,11 @@ import com.pedrozc90.epcs.schemes.gsrn.enums.GSRNTagSize;
 import com.pedrozc90.epcs.schemes.gsrn.objects.GSRN;
 import com.pedrozc90.epcs.schemes.gsrn.partitionTable.GSRNPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
-import com.pedrozc90.epcs.utils.Converter;
-import com.pedrozc90.epcs.utils.StringUtils;
 
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GSRNParser {
+public class GSRNParser implements EpcParser<GSRN> {
 
     private static final Pattern TAG_URI_PATTERN = Pattern.compile("^(urn:epc:tag:gsrn-)(96):([0-7])\\.(\\d+)\\.(\\d+)$");
     private static final Pattern PURE_IDENTITY_URI_PATTERN = Pattern.compile("^(urn:epc:id:gsrn):(\\d+)\\.(\\d+)$");
@@ -63,12 +61,11 @@ public class GSRNParser {
         final GSRNFilterValue filterValue = GSRNFilterValue.of(Integer.parseInt(filterDec));
 
         final String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
-        final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
-        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
+        final String companyPrefix = BinaryUtils.decodeInteger(companyPrefixBin, tableItem.l());
 
         final String serialWithExtensionBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
 
-        final String serviceReference = StringUtils.leftPad(Converter.binToDec(serialWithExtensionBin), tableItem.digits(), '0');
+        final String serviceReference = BinaryUtils.decodeInteger(serialWithExtensionBin, tableItem.digits());
 
         return new ParsedData(tableItem, tagSize, filterValue, prefixLength, companyPrefix, serviceReference);
     }
@@ -114,8 +111,6 @@ public class GSRNParser {
 
     private ParsedData encode(final Steps steps) {
         final PrefixLength prefixLength = PrefixLength.of(steps.companyPrefix.length());
-        validateCompanyPrefix(prefixLength);
-
         final TableItem tableItem = partitionTable.getPartitionByL(prefixLength.getValue());
 
         validateServiceReference(tableItem, steps.serviceReference);
@@ -147,6 +142,20 @@ public class GSRNParser {
         );
     }
 
+    private String toBinary(final ParsedData data) {
+        final StringBuilder bin = new StringBuilder();
+
+        bin.append(BinaryUtils.encodeInteger(data.tagSize.getHeader(), 8));
+        bin.append(BinaryUtils.encodeInteger(data.filterValue.getValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.tableItem.partitionValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.companyPrefix, data.tableItem.m()));
+        bin.append(BinaryUtils.encodeInteger(data.serviceReference, data.tableItem.n()));
+        bin.append(BinaryUtils.encodeInteger(RESERVED, 24));
+
+        return bin.toString();
+    }
+
+    /* --- Validations --- */
     private Integer getCheckDigit(final String companyPrefix, final String serviceReference) {
         final String value = companyPrefix + serviceReference;
 
@@ -163,27 +172,6 @@ public class GSRNParser {
             % 10)) % 10;
 
         return d18;
-    }
-
-    private String toBinary(final ParsedData data) {
-        final StringBuilder bin = new StringBuilder();
-
-        bin.append(Converter.decToBin(data.tagSize.getHeader(), 8));
-        bin.append(Converter.decToBin(data.filterValue.getValue(), 3));
-        bin.append(Converter.decToBin(data.tableItem.partitionValue(), 3));
-        bin.append(Converter.decToBin(Integer.parseInt(data.companyPrefix), data.tableItem.m()));
-        bin.append(Converter.decToBin(Integer.parseInt(data.serviceReference), data.tableItem.n()));
-        bin.append(Converter.decToBin(RESERVED, 24));
-
-        return bin.toString();
-    }
-
-    /* --- Validations --- */
-    private void validateCompanyPrefix(final PrefixLength prefixLength) {
-        final Optional<PrefixLength> optPrefixLength = Optional.ofNullable(prefixLength);
-        if (optPrefixLength.isEmpty()) {
-            throw new IllegalArgumentException("Company Prefix is invalid. Length not found in the partition table");
-        }
     }
 
     private void validateServiceReference(final TableItem tableItem, final String serviceReference) {

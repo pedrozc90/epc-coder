@@ -35,7 +35,7 @@ public enum SGLNTagSize {
     BITS_195(195) {
         @Override
         public Integer getHeader() {
-            return 55;
+            return 0x39; // 55;
         }
 
         @Override

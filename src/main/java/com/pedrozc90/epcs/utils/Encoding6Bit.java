@@ -120,9 +120,10 @@ public class Encoding6Bit {
             return "";
         }
 
-        final StringBuilder binary = new StringBuilder(value.length() * 6);
+        final int length = value.length();
+        final StringBuilder out = new StringBuilder(length * 6);
 
-        for (int i = 0; i < value.length(); i++) {
+        for (int i = 0; i < length; i++) {
             char c = value.charAt(i);
 
             // Convert lowercase to uppercase
@@ -132,17 +133,13 @@ public class Encoding6Bit {
 
             // Get 6-bit encoding
             if (c >= ENCODE_TABLE.length || ENCODE_TABLE[c] == null) {
-                throw new IllegalArgumentException(
-                    "Character '%c' (ASCII %d) at position %d cannot be encoded in 6-bit format. " +
-                        "Allowed characters: A-Z, 0-9, #, -, /"
-                            .formatted(value.charAt(i), (int) value.charAt(i), i)
-                );
+                throw new IllegalArgumentException("Character '%c' (ASCII %d) at position %d cannot be encoded in 6-bit format. Allowed characters: A-Z, 0-9, #, -, /".formatted(value.charAt(i), (int) value.charAt(i), i));
             }
 
-            binary.append(ENCODE_TABLE[c]);
+            out.append(ENCODE_TABLE[c]);
         }
 
-        return binary.toString();
+        return out.toString();
     }
 
     /**
@@ -157,41 +154,33 @@ public class Encoding6Bit {
             return "";
         }
 
-        if (binary.length() % 6 != 0) {
-            throw new IllegalArgumentException(
-                "Binary string length must be multiple of 6 for 6-bit decoding. Got: %d bits"
-                    .formatted(binary.length())
-            );
+        final int length = binary.length();
+        if (length % 6 != 0) {
+            throw new IllegalArgumentException("Binary string length must be multiple of 6 for 6-bit decoding. Got: %d bits".formatted(length));
         }
 
-        final StringBuilder result = new StringBuilder(binary.length() / 6);
+        final StringBuilder out = new StringBuilder(length / 6);
 
-        for (int i = 0; i < binary.length(); i += 6) {
+        for (int i = 0; i < length; i += 6) {
             // Extract 6 bits
             int code = 0;
             for (int j = 0; j < 6; j++) {
                 char bit = binary.charAt(i + j);
                 if (bit != '0' && bit != '1') {
-                    throw new IllegalArgumentException(
-                        "Invalid binary character '%c' at position %d"
-                            .formatted(bit, i + j)
-                    );
+                    throw new IllegalArgumentException("Invalid binary character '%c' at position %d".formatted(bit, i + j));
                 }
                 code = (code << 1) | (bit - '0');
             }
 
             // Decode character
             if (code < 0 || code >= DECODE_TABLE.length || DECODE_TABLE[code] == '\0') {
-                throw new IllegalArgumentException(
-                    "Invalid 6-bit code: %s (decimal %d) at position %d"
-                        .formatted(binary.substring(i, i + 6), code, i)
-                );
+                throw new IllegalArgumentException("Invalid 6-bit code: %s (decimal %d) at position %d".formatted(binary.substring(i, i + 6), code, i));
             }
 
-            result.append(DECODE_TABLE[code]);
+            out.append(DECODE_TABLE[code]);
         }
 
-        return result.toString();
+        return out.toString();
     }
 
 }

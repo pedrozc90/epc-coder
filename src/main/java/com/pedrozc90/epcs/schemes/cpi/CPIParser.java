@@ -2,6 +2,7 @@ package com.pedrozc90.epcs.schemes.cpi;
 
 import com.pedrozc90.epcs.exception.EpcParseException;
 import com.pedrozc90.epcs.objects.TableItem;
+import com.pedrozc90.epcs.schemes.EpcParser;
 import com.pedrozc90.epcs.schemes.PrefixLength;
 import com.pedrozc90.epcs.schemes.cpi.enums.CPIFilterValue;
 import com.pedrozc90.epcs.schemes.cpi.enums.CPIHeader;
@@ -9,15 +10,13 @@ import com.pedrozc90.epcs.schemes.cpi.enums.CPITagSize;
 import com.pedrozc90.epcs.schemes.cpi.objects.CPI;
 import com.pedrozc90.epcs.schemes.cpi.partitionTable.CPIPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
-import com.pedrozc90.epcs.utils.Converter;
 import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CPIParser {
+public class CPIParser implements EpcParser<CPI> {
 
     private static final Pattern TAG_URI_PATTERN = Pattern.compile("^(urn:epc:tag:cpi-)(96|var):([0-7])\\.([0-9]+)\\.(.+)\\.([0-9]+)$");
     private static final Pattern PURE_IDENTITY_URI_PATTERN = Pattern.compile("^(urn:epc:id:cpi):([0-9]+)\\.(.+)\\.([0-9]+)$");
@@ -44,7 +43,7 @@ public class CPIParser {
         return encode(steps);
     }
 
-    private ParsedData decodeRFIDTag(String rfidTag) {
+    private ParsedData decodeRFIDTag(final String rfidTag) {
         final String inputBin = BinaryUtils.toBinary(rfidTag);
 
         final String headerBin = inputBin.substring(0, 8);
@@ -61,39 +60,50 @@ public class CPIParser {
         final String filterDec = Long.toString(Long.parseLong(filterBin, 2));
         final CPIFilterValue filterValue = CPIFilterValue.of(Integer.parseInt(filterDec));
 
-        String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
-        String componentPartReferenceBin = null;
-        String componentPartReference = null;
-        String serialBin = null;
+        final String companyPrefixBin = inputBin.substring(14, 14 + tableItem.m());
+        final String companyPrefix = BinaryUtils.decodeInteger(companyPrefixBin, tableItem.l());
 
-        if (tagSize.getValue() == 0) {  // variable
-            String componentPartReferenceAndSerialBin = inputBin.substring(14 + tableItem.m());
-
-            StringBuilder decodeComponentPartReference = new StringBuilder();
-            final List<String> parts = Converter.chunk(componentPartReferenceAndSerialBin, 6);
-            for (String part : parts) {
-                if (part.equals("000000")) {
-                    break;
-                }
-                decodeComponentPartReference.append(part);
+        // cpi-96
+        final DecodedData decoded = switch (tagSize) {
+            case BITS_96 -> {
+                final String componentPartReferenceBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
+                final String componentPartReference = BinaryUtils.decodeInteger(componentPartReferenceBin);
+                final String serialBin = inputBin.substring(14 + tableItem.m() + tableItem.n());
+                yield new DecodedData(componentPartReferenceBin, componentPartReference, serialBin);
             }
+            // cpi-var
+            case BITS_VARIABLE -> {
+                final int componentPartReferenceStart = 14 + tableItem.m();
+                final String componentPartReferenceAndSerialBin = inputBin.substring(componentPartReferenceStart);
 
-            componentPartReferenceBin = decodeComponentPartReference.toString();
-            int posSerial = 14 + tableItem.m() + componentPartReferenceBin.length() + 6;
-            componentPartReferenceBin = Converter.convertBinToBit(componentPartReferenceBin, 6, 8);
-            componentPartReference = Converter.binToString(componentPartReferenceBin);
-            serialBin = inputBin.substring(posSerial, posSerial + tagSize.getSerialBitCount());
-        } else if (tagSize.getValue() == 96) {
-            componentPartReferenceBin = inputBin.substring(14 + tableItem.m(), 14 + tableItem.m() + tableItem.n());
-            componentPartReference = Converter.binToDec(componentPartReferenceBin);
-            serialBin = inputBin.substring(14 + tableItem.m() + tableItem.n());
-        }
+                // find the terminator "000000"
+                final StringBuilder tmpBin = new StringBuilder();
+                final List<String> parts = StringUtils.chunk(componentPartReferenceAndSerialBin, 6);
+                int chunksRead = 0;
+                for (String part : parts) {
+                    if (part.equals("000000")) {
+                        chunksRead++;
+                        break;
+                    }
+                    tmpBin.append(part);
+                    chunksRead++;
+                }
 
-        final String companyPrefixDec = Converter.binToDec(companyPrefixBin);
-        final String serial = Converter.binToDec(serialBin);
-        final String companyPrefix = StringUtils.leftPad(companyPrefixDec, tableItem.l(), '0');
+                // componentPartReferenceBin = Converter.convertBinToBit(componentPartReferenceBin, 6, 8);
+                // componentPartReference = Converter.binToString(componentPartReferenceBin);
+                final String componentPartReferenceBin = tmpBin.toString();
+                final String componentPartReference = BinaryUtils.decodeString(componentPartReferenceBin, 6);
 
-        return new ParsedData(tableItem, tagSize, filterValue, prefixLength, companyPrefix, componentPartReference, serial);
+                final int posSerial = componentPartReferenceStart + (chunksRead * 6);
+                final String serialBin = inputBin.substring(posSerial, posSerial + tagSize.getSerialBitCount());
+
+                yield new DecodedData(componentPartReferenceBin, componentPartReference, serialBin);
+            }
+        };
+
+        final String serial = BinaryUtils.decodeInteger(decoded.serialBin);
+
+        return new ParsedData(tableItem, tagSize, filterValue, prefixLength, companyPrefix, decoded.componentPartReference, serial);
     }
 
     private ParsedData decodeEpcTagURI(final String epcTagURI) {
@@ -102,13 +112,12 @@ public class CPIParser {
             throw new IllegalArgumentException("Epc Tag URI is invalid");
         }
 
-        CPITagSize tagSize;
         final String size = matcher.group(2);
-        if (size.equals("var")) {
-            tagSize = CPITagSize.of(0);
-        } else {
-            tagSize = CPITagSize.of(Integer.parseInt(size));
-        }
+        final CPITagSize tagSize = switch (size) {
+            case "96" -> CPITagSize.BITS_96;
+            case "var" -> CPITagSize.BITS_VARIABLE;
+            default -> throw new IllegalArgumentException("Unsupported tag size '%s'".formatted(size));
+        };
 
         final CPIFilterValue filterValue = CPIFilterValue.of(Integer.parseInt(matcher.group(3)));
         final String companyPrefix = matcher.group(4);
@@ -150,8 +159,6 @@ public class CPIParser {
         final CPIPartitionTable partitionTable = CPIPartitionTable.getInstance(steps.tagSize);
         final PrefixLength prefixLength = PrefixLength.of(steps.companyPrefix.length());
 
-        validateCompanyPrefix(prefixLength);
-
         final TableItem tableItem = partitionTable.getPartitionByL(prefixLength.getValue());
 
         validateComponentPartReference(tableItem, steps.tagSize, steps.componentPartReference);
@@ -164,29 +171,34 @@ public class CPIParser {
     private BinaryResult toBinary(final ParsedData data) {
         final StringBuilder bin = new StringBuilder();
 
-        bin.append(Converter.decToBin(data.tagSize.getHeader(), 8));
-        bin.append(Converter.decToBin(data.filterValue.getValue(), 3));
-        bin.append(Converter.decToBin(data.tableItem.partitionValue(), 3));
-        bin.append(Converter.decToBin(Integer.parseInt(data.companyPrefix), data.tableItem.m()));
+        bin.append(BinaryUtils.encodeInteger(data.tagSize.getHeader(), 8));
+        bin.append(BinaryUtils.encodeInteger(data.filterValue.getValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.tableItem.partitionValue(), 3));
+        bin.append(BinaryUtils.encodeInteger(data.companyPrefix, data.tableItem.m()));
 
-        // variable
-        if (data.tagSize.getValue() == 0) {
-            // bin.append(Converter.StringToBinary(componentPartReference, 6));
-            bin.append(Converter.to6BitsBinary(data.componentPartReference));
-            bin.append("000000");
-        } else if (data.tagSize.getValue() == 96) {
-            bin.append(Converter.decToBin(Integer.parseInt(data.componentPartReference), data.tableItem.n()));
+        // cpi-96
+        switch (data.tagSize) {
+            case BITS_96 -> {
+                bin.append(BinaryUtils.encodeInteger(data.componentPartReference, data.tableItem.n()));
+                bin.append(BinaryUtils.encodeInteger(data.serial, data.tagSize.getSerialBitCount()));
+            }
+            // cpi-var
+            case BITS_VARIABLE -> {
+                bin.append(BinaryUtils.encodeString(data.componentPartReference, 6 * data.componentPartReference.length(), 6));
+                bin.append("000000");
+                bin.append(BinaryUtils.encodeInteger(data.serial, data.tagSize.getSerialBitCount()));
+            }
         }
 
-        bin.append(Converter.decToBin(data.serial, data.tagSize.getSerialBitCount()));
-
+        // Calculate remainder AFTER building the complete binary
         // remainder = (int) (Math.ceil((bin.length() / 16.0)) * 16) - bin.length();
-        final int remainder = Converter.remainder(bin.length());
-        if (remainder > 0) {
-            bin.append(Converter.fill("0", remainder));
-        }
+        final int remainder = remainder(bin.length());
+//        if (remainder > 0) {
+//            bin.append(Converter.fill("0", remainder));
+//        }
+        final String binary = StringUtils.rightPad(bin.toString(), bin.length() + remainder, '0');
 
-        return new BinaryResult(bin.toString(), remainder);
+        return new BinaryResult(binary, remainder);
     }
 
     private CPI toCPI(final ParsedData data) {
@@ -218,13 +230,6 @@ public class CPIParser {
     }
 
     /* --- Validation --- */
-    private void validateCompanyPrefix(final PrefixLength prefixLength) {
-        final Optional<PrefixLength> optPrefixLength = Optional.ofNullable(prefixLength);
-        if (optPrefixLength.isEmpty()) {
-            throw new IllegalArgumentException("Company Prefix is invalid. Length not found in the partition table");
-        }
-    }
-
     private void validateComponentPartReference(final TableItem tableItem, final CPITagSize tagSize, final String componentPartReference) {
         if (componentPartReference.length() > tableItem.digits()) {
             throw new IllegalArgumentException("Component/Part Reference is out of range");
@@ -291,6 +296,14 @@ public class CPIParser {
     private record BinaryResult(
         String binary,
         int remainder
+    ) {
+        // empty
+    }
+
+    private record DecodedData(
+        String componentPartReferenceBin,
+        String componentPartReference,
+        String serialBin
     ) {
         // empty
     }

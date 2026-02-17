@@ -28,8 +28,12 @@ public enum PrefixLength {
 
     private final int value;
 
-    public static PrefixLength of(final int value) {
-        return _map.get(value);
+    public static PrefixLength of(final int length) {
+        final PrefixLength value = _map.get(length);
+        if (value == null) {
+            throw new IllegalArgumentException("Company Prefix is invalid. Length not found in the partition table");
+        }
+        return value;
     }
 
 }

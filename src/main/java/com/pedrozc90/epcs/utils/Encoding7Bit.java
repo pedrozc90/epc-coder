@@ -9,6 +9,9 @@ import java.util.Map;
  */
 public class Encoding7Bit {
 
+    // All zeros terminator
+    private static final String TERMINATOR = "0000000";
+
     // Character to 7-bit binary string mapping (based on GS1 Table A-1)
     private static final Map<Character, String> CHAR_TO_BINARY = new HashMap<>();
 
@@ -112,109 +115,99 @@ public class Encoding7Bit {
         addMapping('z', "1111010");  // 0x7A
     }
 
-    private static void addMapping(char character, String binaryValue) {
-        if (binaryValue.length() != 7) {
+    private static void addMapping(final char character, final String binary) {
+        if (binary.length() != 7) {
             throw new IllegalArgumentException("Binary value must be exactly 7 bits");
         }
-        CHAR_TO_BINARY.put(character, binaryValue);
-        BINARY_TO_CHAR.put(binaryValue, character);
+        CHAR_TO_BINARY.put(character, binary);
+        BINARY_TO_CHAR.put(binary, character);
     }
 
     /**
-     * Encodes a string into a 7-bit binary representation.
+     * Encodes a string using 7-bit ASCII encoding (GS1 String Encoding Method).
+     * Each character is encoded as a 7-bit value. Output is padded to the right with zeros.
      *
-     * @param input The string to encode
-     * @return Binary string representation (7 bits per character)
-     * @throws IllegalArgumentException if input contains invalid characters or is empty
+     * @param value - alphanumeric string (ASCII characters)
+     * @param bits  - total bit count for output
+     * @return binary string padded to specified bit length
      */
-    public static String encode(String input) {
-        if (input == null || input.isEmpty()) {
-            throw new IllegalArgumentException("Input string cannot be null or empty");
+    public static String encode(final String value, final int bits) {
+        if (value == null || value.isEmpty()) {
+            // throw new IllegalArgumentException("Input string cannot be null or empty");
+            // all zeros for empty string
+            return "0".repeat(bits);
         }
 
-        StringBuilder binaryResult = new StringBuilder(input.length() * 7);
+        final StringBuilder out = new StringBuilder(value.length() * 7);
 
-        for (char c : input.toCharArray()) {
-            String binary = CHAR_TO_BINARY.get(c);
-            if (binary == null) {
-                throw new IllegalArgumentException("Invalid character: '" + c + "' (not in GS1 character set)");
+        final int length = value.length();
+        for (int i = 0; i < length; i++) {
+            final char c = value.charAt(i);
+            final String bin = CHAR_TO_BINARY.get(c);
+            if (bin == null) {
+                throw new IllegalArgumentException("Invalid character: '%c' (not in GS1 character set)".formatted(c));
             }
-            binaryResult.append(binary);
+            out.append(bin);
         }
 
-        return binaryResult.toString();
+        // Validate: total bits must fit
+        if (value.length() > bits) {
+            throw new IllegalArgumentException("String '%s' requires %d bits but only %d bits available".formatted(value, length, bits));
+        }
+
+        return StringUtils.rightPad(out.toString(), bits, '0');
     }
 
     /**
      * Decodes a 7-bit binary string back to the original text.
      * Handles partial segments by treating trailing bits as zeros.
+     * <p>
+     * Decodes a 7-bit ASCII encoded binary string.
+     * Stops at first all-zero segment (0000000).
      *
-     * @param binary The binary string to decode
+     * @param value - The binary string to decode
      * @return Decoded string
      * @throws IllegalArgumentException if binary string is invalid
      */
-    public static String decode(String binary) {
-        if (binary == null || binary.isEmpty()) {
-            throw new IllegalArgumentException("Binary string cannot be null or empty");
+    public static String decode(final String value) {
+        if (value == null || value.isEmpty()) {
+            // throw new IllegalArgumentException("Binary string cannot be null or empty");
+            return "";
         }
 
-        if (binary.length() % 7 != 0) {
-            throw new IllegalArgumentException("Binary string length must be a multiple of 7 (got " + binary.length() + " bits)");
+        // Remove trailing zeros (padding)
+        final String trimmed = StringUtils.removeTrailingZeros(value);
+        if (trimmed.isEmpty()) {
+            return "";
         }
 
-        StringBuilder result = new StringBuilder();
-        boolean terminatorFound = false;
+        // Pad to make multiple of 7
+        final int remainder = trimmed.length() % 7;
 
-        // Process complete 7-bit segments
-        int completeSegments = binary.length() / 7;
-        int remainingBits = binary.length() % 7;
+        final String padded = (remainder != 0)
+            ? trimmed + "0".repeat(7 - remainder)
+            : trimmed;
 
-        for (int i = 0; i < completeSegments; i++) {
-            int startIdx = i * 7;
-            String segment = binary.substring(startIdx, startIdx + 7);
 
-            // Check for all-zeros terminator
-            if (segment.equals("0000000")) {
-                terminatorFound = true;
-                // All subsequent segments must also be zeros
-                continue;
-            }
+        final StringBuilder out = new StringBuilder();
 
-            // Validation: no non-zero segments after terminator
-            if (terminatorFound) {
-                throw new IllegalArgumentException(
-                    "Invalid encoding: non-zero segment after terminator at position " + startIdx
-                );
+        final int length = padded.length();
+        for (int i = 0; i < length; i += 7) {
+            final String segment = value.substring(i, i + 7);
+            if (segment.equals(TERMINATOR)) {
+                break;
             }
 
             // Look up character
-            Character character = BINARY_TO_CHAR.get(segment);
+            final Character character = BINARY_TO_CHAR.get(segment);
             if (character == null) {
-                throw new IllegalArgumentException(
-                    "Invalid 7-bit value: " + segment + " at position " + startIdx
-                );
+                throw new IllegalArgumentException("Invalid 7-bit value: '%s' at position '%d'".formatted(segment, i));
             }
 
-            result.append(character);
+            out.append(character);
         }
 
-        // Handle remaining bits (partial segment)
-        if (remainingBits > 0) {
-            String lastSegment = binary.substring(completeSegments * 7);
-            // Check if remaining bits are all zeros (valid padding)
-            if (!lastSegment.matches("0+")) {
-                throw new IllegalArgumentException(
-                    "Invalid encoding: partial segment with non-zero bits: " + lastSegment
-                );
-            }
-        }
-
-        // Validation: first segment cannot be all zeros (string must have at least one character)
-        if (result.length() == 0 && completeSegments > 0) {
-            throw new IllegalArgumentException("Invalid encoding: string must contain at least one character");
-        }
-
-        return result.toString();
+        return out.toString();
     }
 
 }

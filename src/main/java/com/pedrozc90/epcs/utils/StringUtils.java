@@ -234,4 +234,48 @@ public class StringUtils {
         return value.concat(padStr.repeat(pads));
     }
 
+    /**
+     * Removes leading zeros from a numeric string.
+     * Returns "0" if the string is all zeros or empty.
+     *
+     * @param str - numeric string with potential leading zeros
+     * @return string with leading zeros removed, or "0" if all zeros
+     */
+    public static String removeLeadingZeros(final String str) {
+        if (str == null || str.isEmpty()) {
+            return "0";
+        }
+
+        int start = 0;
+        int length = str.length();
+
+        // Find first non-zero character
+        while (start < length && str.charAt(start) == '0') {
+            start++;
+        }
+
+        // If all zeros, return "0"
+        return (start == length) ? "0" : str.substring(start);
+    }
+
+    /**
+     * Removes trailing zeros from a string.
+     * Returns "" if the string is all zeros.
+     *
+     * @param str - string with potential trailing zeros
+     * @return string with trailing zeros removed
+     */
+    public static String removeTrailingZeros(final String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+
+        int end = str.length() - 1;
+        while (end >= 0 && str.charAt(end) == '0') {
+            end--;
+        }
+
+        return (end < 0) ? "" : str.substring(0, end + 1);
+    }
+
 }
