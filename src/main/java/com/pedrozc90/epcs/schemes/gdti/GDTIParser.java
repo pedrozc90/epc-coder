@@ -142,23 +142,23 @@ public class GDTIParser {
 
         final Integer checkDigit = getCheckDigit(data.companyPrefix, data.docType);
 
-        final GDTI gdti = new GDTI();
-        // gdti.setEpcScheme("gdti");
-        gdti.setApplicationIdentifier("AI 253");
-        gdti.setTagSize(Integer.toString(data.tagSize.getValue()));
-        gdti.setFilterValue(Integer.toString(data.filterValue.getValue()));
-        gdti.setPartitionValue(Integer.toString(data.tableItem.partitionValue()));
-        gdti.setPrefixLength(Integer.toString(data.prefixLength.getValue()));
-        gdti.setCompanyPrefix(data.companyPrefix);
-        gdti.setDocType(data.docType);
-        gdti.setSerial(data.serial);
-        gdti.setCheckDigit(Integer.toString(checkDigit));
-        gdti.setEpcPureIdentityURI("urn:epc:id:gdti:%s.%s.%s".formatted(data.companyPrefix, data.docType, data.serial));
-        gdti.setEpcTagURI("urn:epc:tag:gdti-%s:%s.%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.docType, data.serial));
-        gdti.setEpcRawURI("urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + remainder, outputHex));
-        gdti.setBinary(outputBin);
-        gdti.setRfidTag(outputHex);
-        return gdti;
+        return new GDTI(
+            // "gdti",
+            // "AI 253",
+            Integer.toString(data.tagSize.getValue()),
+            Integer.toString(data.filterValue.getValue()),
+            Integer.toString(data.tableItem.partitionValue()),
+            Integer.toString(data.prefixLength.getValue()),
+            data.companyPrefix,
+            data.docType,
+            data.serial,
+            Integer.toString(checkDigit),
+            "urn:epc:id:gdti:%s.%s.%s".formatted(data.companyPrefix, data.docType, data.serial),
+            "urn:epc:tag:gdti-%s:%s.%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.docType, data.serial),
+            "urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + remainder, outputHex),
+            outputBin,
+            outputHex
+        );
     }
 
     private BinaryResult toBinary(final ParsedData data) {

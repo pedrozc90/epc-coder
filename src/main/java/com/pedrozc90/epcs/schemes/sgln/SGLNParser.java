@@ -150,23 +150,23 @@ public class SGLNParser {
 
         final Integer checkDigit = getCheckDigit(data.companyPrefix, data.locationReference);
 
-        final SGLN sgln = new SGLN();
-        // sgln.setEpcScheme("sgln");
-        sgln.setApplicationIdentifier("AI 254");
-        sgln.setTagSize(Integer.toString(data.tagSize.getValue()));
-        sgln.setFilterValue(Integer.toString(data.filterValue.getValue()));
-        sgln.setPartitionValue(Integer.toString(data.tableItem.partitionValue()));
-        sgln.setPrefixLength(Integer.toString(data.prefixLength.getValue()));
-        sgln.setCompanyPrefix(data.companyPrefix);
-        sgln.setLocationReference(data.locationReference);
-        sgln.setExtension(data.extension);
-        sgln.setCheckDigit(Integer.toString(checkDigit));
-        sgln.setEpcPureIdentityURI("urn:epc:id:sgln:%s.%s.%s".formatted(data.companyPrefix, data.locationReference, data.extension));
-        sgln.setEpcTagURI("urn:epc:tag:sgln-%s:%s.%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.locationReference, data.extension));
-        sgln.setEpcRawURI("urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + remainder, outputHex));
-        sgln.setBinary(outputBin);
-        sgln.setRfidTag(outputHex);
-        return sgln;
+        return new SGLN(
+            // "sgln",
+            // "AI 254",
+            Integer.toString(data.tagSize.getValue()),
+            Integer.toString(data.filterValue.getValue()),
+            Integer.toString(data.tableItem.partitionValue()),
+            Integer.toString(data.prefixLength.getValue()),
+            data.companyPrefix,
+            data.locationReference,
+            data.extension,
+            Integer.toString(checkDigit),
+            "urn:epc:id:sgln:%s.%s.%s".formatted(data.companyPrefix, data.locationReference, data.extension),
+            "urn:epc:tag:sgln-%s:%s.%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.locationReference, data.extension),
+            "urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + remainder, outputHex),
+            outputBin,
+            outputHex
+        );
     }
 
     private BinaryResult toBinary(final ParsedData data) {

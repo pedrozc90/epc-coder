@@ -1,25 +1,34 @@
 package com.pedrozc90.epcs.schemes.sscc.objects;
 
-import com.pedrozc90.epcs.objects.Base;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.pedrozc90.epcs.objects.Epc;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class SSCC extends Base {
+public record SSCC(
+    String tagSize,
+    String filterValue,
+    String partitionValue,
+    String prefixLength,
+    String companyPrefix,
+    String extensionDigit,
+    String serial,
+    String checkDigit,
+    String epcPureIdentityURI,
+    String epcTagURI,
+    String epcRawURI,
+    String binary,
+    String rfidTag
+) implements Epc {
 
-    private static final String SCHEMA = "sscc";
+    private static final String SCHEME = "sscc";
+    private static final String IDENTIFIER = "AI 00";
 
-    private String extensionDigit;
-    private String serial;
-    private String checkDigit;
+    @Override
+    public String epcScheme() {
+        return SCHEME;
+    }
 
-    public SSCC() {
-        super(SCHEMA);
+    @Override
+    public String applicationIdentifier() {
+        return IDENTIFIER;
     }
 
 }

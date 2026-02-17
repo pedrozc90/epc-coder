@@ -173,27 +173,27 @@ public class SGTINParser {
         final Integer checkDigit = calculateCheckDigit(data.extensionDigit, data.companyPrefix, data.itemReference);
 
         final BinaryResult result = toBinary(data);
-        final String hex = BinaryUtils.toHex(result.binary);
+        final String outputBin = result.binary;
+        final String outputHex = BinaryUtils.toHex(result.binary);
 
-        final SGTIN sgtin = new SGTIN();
-        // sgtin.setEpcScheme("sgtin");
-        sgtin.setApplicationIdentifier("AI 414 + AI 254");
-        sgtin.setTagSize(Integer.toString(data.tagSize.getValue()));
-        sgtin.setFilterValue(Integer.toString(data.filterValue.getValue()));
-        sgtin.setPartitionValue(Integer.toString(data.tableItem.partitionValue()));
-        sgtin.setPrefixLength(Integer.toString(data.prefixLength.getValue()));
-        sgtin.setCompanyPrefix(data.companyPrefix);
-        sgtin.setItemReference(data.itemReference);
-        sgtin.setExtensionDigit(Integer.toString(data.extensionDigit.getValue()));
-        sgtin.setSerial(data.serial);
-        sgtin.setCheckDigit(Integer.toString(checkDigit));
-        sgtin.setEpcPureIdentityURI("urn:epc:id:sgtin:%s.%s%s.%s".formatted(data.companyPrefix, data.extensionDigit.getValue(), data.itemReference, data.serial));
-        sgtin.setEpcTagURI("urn:epc:tag:sgtin-%s:%s.%s.%s%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.extensionDigit.getValue(), data.itemReference, data.serial));
-        sgtin.setEpcRawURI("urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + result.remainder, hex));
-        sgtin.setRfidTag(hex);
-        sgtin.setBinary(result.binary);
-
-        return sgtin;
+        return new SGTIN(
+            // "sgtin",
+            // "AI 414 + AI 254",
+            Integer.toString(data.tagSize.getValue()),
+            Integer.toString(data.filterValue.getValue()),
+            Integer.toString(data.tableItem.partitionValue()),
+            Integer.toString(data.prefixLength.getValue()),
+            data.companyPrefix,
+            data.itemReference,
+            Integer.toString(data.extensionDigit.getValue()),
+            data.serial,
+            Integer.toString(checkDigit),
+            "urn:epc:id:sgtin:%s.%s%s.%s".formatted(data.companyPrefix, data.extensionDigit.getValue(), data.itemReference, data.serial),
+            "urn:epc:tag:sgtin-%s:%s.%s.%s%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.extensionDigit.getValue(), data.itemReference, data.serial),
+            "urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + result.remainder, outputHex),
+            outputBin,
+            outputHex
+        );
     }
 
     /* --- Validations --- */

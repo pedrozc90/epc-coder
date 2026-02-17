@@ -1,25 +1,34 @@
 package com.pedrozc90.epcs.schemes.grai.objects;
 
-import com.pedrozc90.epcs.objects.Base;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.pedrozc90.epcs.objects.Epc;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class GRAI extends Base {
+public record GRAI(
+    String tagSize,
+    String filterValue,
+    String partitionValue,
+    String prefixLength,
+    String companyPrefix,
+    String assetType,
+    String serial,
+    String checkDigit,
+    String epcPureIdentityURI,
+    String epcTagURI,
+    String epcRawURI,
+    String binary,
+    String rfidTag
+) implements Epc {
 
-    private static final String SCHEMA = "grai";
+    private static final String SCHEME = "grai";
+    private static final String IDENTIFIER = "AI 8003";
 
-    private String assetType;
-    private String serial;
-    private String checkDigit;
+    @Override
+    public String epcScheme() {
+        return SCHEME;
+    }
 
-    public GRAI() {
-        super(SCHEMA);
+    @Override
+    public String applicationIdentifier() {
+        return IDENTIFIER;
     }
 
 }

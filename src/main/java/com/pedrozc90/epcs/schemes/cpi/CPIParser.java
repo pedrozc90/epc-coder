@@ -199,22 +199,22 @@ public class CPIParser {
 
         final String tagSize = (data.tagSize.getValue() == 0) ? "var" : Integer.toString(data.tagSize.getValue());
 
-        final CPI cpi = new CPI();
-        // cpi.setEpcScheme("cpi");
-        cpi.setApplicationIdentifier("AI 8010 + AI 8011");
-        cpi.setTagSize(tagSize);
-        cpi.setFilterValue(Integer.toString(data.filterValue.getValue()));
-        cpi.setPartitionValue(Integer.toString(data.tableItem.partitionValue()));
-        cpi.setPrefixLength(Integer.toString(data.prefixLength.getValue()));
-        cpi.setCompanyPrefix(data.companyPrefix);
-        cpi.setComponentPartReference(data.componentPartReference);
-        cpi.setSerial(data.serial);
-        cpi.setEpcPureIdentityURI("urn:epc:id:cpi:%s.%s.%s".formatted(data.companyPrefix, data.componentPartReference, data.serial));
-        cpi.setEpcTagURI("urn:epc:tag:cpi-%s:%s.%s.%s.%s".formatted(tagSize, data.filterValue.getValue(), data.companyPrefix, data.componentPartReference, data.serial));
-        cpi.setEpcRawURI("urn:epc:raw:%s.x%s".formatted(outputBin.length(), outputHex));
-        cpi.setBinary(outputBin);
-        cpi.setRfidTag(outputHex);
-        return cpi;
+        return new CPI(
+            // "cpi",
+            // "AI 8010 + AI 8011",
+            tagSize,
+            Integer.toString(data.filterValue.getValue()),
+            Integer.toString(data.tableItem.partitionValue()),
+            Integer.toString(data.prefixLength.getValue()),
+            data.companyPrefix,
+            data.componentPartReference,
+            data.serial,
+            "urn:epc:id:cpi:%s.%s.%s".formatted(data.companyPrefix, data.componentPartReference, data.serial),
+            "urn:epc:tag:cpi-%s:%s.%s.%s.%s".formatted(tagSize, data.filterValue.getValue(), data.companyPrefix, data.componentPartReference, data.serial),
+            "urn:epc:raw:%s.x%s".formatted(outputBin.length(), outputHex),
+            outputBin,
+            outputHex
+        );
     }
 
     /* --- Validation --- */

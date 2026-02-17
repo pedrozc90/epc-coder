@@ -1,24 +1,33 @@
 package com.pedrozc90.epcs.schemes.gsrnp.objects;
 
-import com.pedrozc90.epcs.objects.Base;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.pedrozc90.epcs.objects.Epc;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class GSRNP extends Base {
+public record GSRNP(
+    String tagSize,
+    String filterValue,
+    String partitionValue,
+    String prefixLength,
+    String companyPrefix,
+    String serviceReference,
+    String checkDigit,
+    String epcPureIdentityURI,
+    String epcTagURI,
+    String epcRawURI,
+    String binary,
+    String rfidTag
+) implements Epc {
 
-    private static final String SCHEMA = "gsrnp";
+    private static final String SCHEME = "gsrnp";
+    private static final String IDENTIFIER = "AI 8017";
 
-    private String serviceReference;
-    private String checkDigit;
+    @Override
+    public String epcScheme() {
+        return SCHEME;
+    }
 
-    public GSRNP() {
-        super(SCHEMA);
+    @Override
+    public String applicationIdentifier() {
+        return IDENTIFIER;
     }
 
 }

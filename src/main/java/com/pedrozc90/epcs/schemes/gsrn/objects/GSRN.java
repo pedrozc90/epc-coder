@@ -1,24 +1,33 @@
 package com.pedrozc90.epcs.schemes.gsrn.objects;
 
-import com.pedrozc90.epcs.objects.Base;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.pedrozc90.epcs.objects.Epc;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class GSRN extends Base {
+public record GSRN(
+    String tagSize,
+    String filterValue,
+    String partitionValue,
+    String prefixLength,
+    String companyPrefix,
+    String serviceReference,
+    String checkDigit,
+    String epcPureIdentityURI,
+    String epcTagURI,
+    String epcRawURI,
+    String binary,
+    String rfidTag
+) implements Epc {
 
-    private static final String SCHEMA = "gsrn";
+    private static final String SCHEME = "gsrn";
+    private static final String IDENTIFIER = "AI 8018";
 
-    private String serviceReference;
-    private String checkDigit;
+    @Override
+    public String epcScheme() {
+        return SCHEME;
+    }
 
-    public GSRN() {
-        super(SCHEMA);
+    @Override
+    public String applicationIdentifier() {
+        return IDENTIFIER;
     }
 
 }

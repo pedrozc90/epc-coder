@@ -116,17 +116,17 @@ public class GRAIParserTest {
 
     private static void validate(ExpectedData data, GRAI result) {
         assertNotNull(result);
-        assertEquals(data.rfidTag, result.getRfidTag());
-        assertEquals(data.epcTagURI, result.getEpcTagURI());
-        assertEquals(data.epcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(data.epcScheme, result.getEpcScheme());
-        assertEquals(data.tagSize, result.getTagSize());
-        assertEquals(data.filterValue, result.getFilterValue());
-        assertEquals(data.prefixLength, result.getPrefixLength());
-        assertEquals(data.companyPrefix, result.getCompanyPrefix());
-        assertEquals(data.assetType, result.getAssetType());
-        assertEquals(data.serial, result.getSerial());
-        assertEquals(data.bitCount, result.getBinary().length());
+        assertEquals(data.rfidTag, result.rfidTag());
+        assertEquals(data.epcTagURI, result.epcTagURI());
+        assertEquals(data.epcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(data.epcScheme, result.epcScheme());
+        assertEquals(data.tagSize, result.tagSize());
+        assertEquals(data.filterValue, result.filterValue());
+        assertEquals(data.prefixLength, result.prefixLength());
+        assertEquals(data.companyPrefix, result.companyPrefix());
+        assertEquals(data.assetType, result.assetType());
+        assertEquals(data.serial, result.serial());
+        assertEquals(data.bitCount, result.binary().length());
     }
 
     protected record ExpectedData(

@@ -1,25 +1,34 @@
 package com.pedrozc90.epcs.schemes.gdti.objects;
 
-import com.pedrozc90.epcs.objects.Base;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.pedrozc90.epcs.objects.Epc;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class GDTI extends Base {
+public record GDTI(
+    String tagSize,
+    String filterValue,
+    String partitionValue,
+    String prefixLength,
+    String companyPrefix,
+    String docType,
+    String serial,
+    String checkDigit,
+    String epcPureIdentityURI,
+    String epcTagURI,
+    String epcRawURI,
+    String binary,
+    String rfidTag
+) implements Epc {
 
-    private static final String SCHEMA = "gdti";
+    public static final String SCHEME = "gdti";
+    public static final String IDENTIFIER = "AI 253";
 
-    private String docType;
-    private String serial;
-    private String checkDigit;
+    @Override
+    public String epcScheme() {
+        return SCHEME;
+    }
 
-    public GDTI() {
-        super(SCHEMA);
+    @Override
+    public String applicationIdentifier() {
+        return IDENTIFIER;
     }
 
 }

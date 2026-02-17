@@ -105,20 +105,20 @@ public class SGTINParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedPartitionValue, result.getPartitionValue());
-        assertEquals(expectedCheckDigit, result.getCheckDigit());
-        assertEquals(expectedExtensionDigit, result.getExtensionDigit());
-        assertEquals(expectedItemReference, result.getItemReference());
-        assertEquals(expectedSerial, result.getSerial());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedPartitionValue, result.partitionValue());
+        assertEquals(expectedCheckDigit, result.checkDigit());
+        assertEquals(expectedExtensionDigit, result.extensionDigit());
+        assertEquals(expectedItemReference, result.itemReference());
+        assertEquals(expectedSerial, result.serial());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     @DisplayName("Decode RFID Tag")
@@ -145,20 +145,20 @@ public class SGTINParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expectedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedPartitionValue, result.getPartitionValue());
-        assertEquals(expectedCheckDigit, result.getCheckDigit());
-        assertEquals(expectedExtensionDigit, result.getExtensionDigit());
-        assertEquals(expectedItemReference, result.getItemReference());
-        assertEquals(expectedSerial, result.getSerial());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expectedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedPartitionValue, result.partitionValue());
+        assertEquals(expectedCheckDigit, result.checkDigit());
+        assertEquals(expectedExtensionDigit, result.extensionDigit());
+        assertEquals(expectedItemReference, result.itemReference());
+        assertEquals(expectedSerial, result.serial());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     @DisplayName("Decode Epc Tag URI")
@@ -185,20 +185,20 @@ public class SGTINParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expextedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedPartitionValue, result.getPartitionValue());
-        assertEquals(expectedCheckDigit, result.getCheckDigit());
-        assertEquals(expectedExtensionDigit, result.getExtensionDigit());
-        assertEquals(expectedItemReference, result.getItemReference());
-        assertEquals(expectedSerial, result.getSerial());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expextedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedPartitionValue, result.partitionValue());
+        assertEquals(expectedCheckDigit, result.checkDigit());
+        assertEquals(expectedExtensionDigit, result.extensionDigit());
+        assertEquals(expectedItemReference, result.itemReference());
+        assertEquals(expectedSerial, result.serial());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     @DisplayName("Decode Epc Pure Identity URI")
@@ -230,20 +230,20 @@ public class SGTINParserTest {
             .build();
 
         assertNotNull(result);
-        assertEquals(expextedRfidTag, result.getRfidTag());
-        assertEquals(expectedEpcTagURI, result.getEpcTagURI());
-        assertEquals(expectedEpcPureIdentityURI, result.getEpcPureIdentityURI());
-        assertEquals(expectedEpcScheme, result.getEpcScheme());
-        assertEquals(expectedTagSize, result.getTagSize());
-        assertEquals(expectedFilterValue, result.getFilterValue());
-        assertEquals(expectedPrefixLength, result.getPrefixLength());
-        assertEquals(expectedCompanyPrefix, result.getCompanyPrefix());
-        assertEquals(expectedPartitionValue, result.getPartitionValue());
-        assertEquals(expectedCheckDigit, result.getCheckDigit());
-        assertEquals(expectedExtensionDigit, result.getExtensionDigit());
-        assertEquals(expectedItemReference, result.getItemReference());
-        assertEquals(expectedSerial, result.getSerial());
-        assertEquals(expectedBitCount, result.getBinary().length());
+        assertEquals(expextedRfidTag, result.rfidTag());
+        assertEquals(expectedEpcTagURI, result.epcTagURI());
+        assertEquals(expectedEpcPureIdentityURI, result.epcPureIdentityURI());
+        assertEquals(expectedEpcScheme, result.epcScheme());
+        assertEquals(expectedTagSize, result.tagSize());
+        assertEquals(expectedFilterValue, result.filterValue());
+        assertEquals(expectedPrefixLength, result.prefixLength());
+        assertEquals(expectedCompanyPrefix, result.companyPrefix());
+        assertEquals(expectedPartitionValue, result.partitionValue());
+        assertEquals(expectedCheckDigit, result.checkDigit());
+        assertEquals(expectedExtensionDigit, result.extensionDigit());
+        assertEquals(expectedItemReference, result.itemReference());
+        assertEquals(expectedSerial, result.serial());
+        assertEquals(expectedBitCount, result.binary().length());
     }
 
     // Specific field extraction tests
@@ -255,7 +255,7 @@ public class SGTINParserTest {
     })
     public void parseEpcSerial(final String rfidTag, final String expectedSerial) throws EpcParseException {
         final SGTIN sgtin = Builder().withRFIDTag(rfidTag).build();
-        assertEquals(expectedSerial, sgtin.getSerial());
+        assertEquals(expectedSerial, sgtin.serial());
     }
 
     @ParameterizedTest(name = "[{index}] RFID: {0} -> EAN: {1}")
@@ -265,7 +265,7 @@ public class SGTINParserTest {
     })
     public void parseEpcEan(final String rfidTag, final String expectedEan) throws EpcParseException {
         final SGTIN sgtin = Builder().withRFIDTag(rfidTag).build();
-        assertEquals(expectedEan, sgtin.getCompanyPrefix() + sgtin.getItemReference());
+        assertEquals(expectedEan, sgtin.companyPrefix() + sgtin.itemReference());
     }
 
     @ParameterizedTest(name = "[{index}] RFID: {0} -> Filter: {1}")
@@ -276,7 +276,7 @@ public class SGTINParserTest {
     })
     public void parseEpcFilter(final String rfidTag, final String expectedFilter) throws EpcParseException {
         final SGTIN sgtin = Builder().withRFIDTag(rfidTag).build();
-        assertEquals(expectedFilter, sgtin.getFilterValue());
+        assertEquals(expectedFilter, sgtin.filterValue());
     }
 
     @ParameterizedTest(name = "[{index}] RFID: {0} -> Partition: {1}")
@@ -286,7 +286,7 @@ public class SGTINParserTest {
     })
     public void parseEpcPartition(final String rfidTag, final String expectedPartition) throws EpcParseException {
         final SGTIN sgtin = Builder().withRFIDTag(rfidTag).build();
-        assertEquals(expectedPartition, sgtin.getPartitionValue());
+        assertEquals(expectedPartition, sgtin.partitionValue());
     }
 
     // Exception tests
