@@ -180,100 +180,6 @@ public class BinaryUtils {
     }
 
     /**
-     * Encodes an alphanumeric string to a binary string using GS1 String Decoding Method.
-     *
-     * @param value - binary string to be decoded.
-     * @param bits  - encoding bits, 6 bits or 7 bits
-     * @return decoded alphanumeric string (may contain %XX escape sequence)
-     * @throws IllegalArgumentException if validation fails
-     */
-    public static String encodeString(final String value, final int length, final int bits) {
-        return switch (bits) {
-            case 6 -> Encoding6Bit.encode(value);
-            case 7 -> Encoding7Bit.encode(value, length);
-            default -> throw new IllegalArgumentException("Unsupported '%d' bit encoding".formatted(bits));
-        };
-    }
-
-//    /**
-//     * Encodes an alphanumeric string to binary using GS1 String Encoding Method.
-//     *
-//     * <p>The String encoding method is used for a segment that appears as an alphanumeric
-//     * string in the URI, and as an ISO/IEC 646 [ISO646] (ASCII) encoded bit string in the
-//     * binary encoding.</p>
-//     *
-//     * <p>Each character is encoded as a 7-bit string according to Table A-1. For escape
-//     * sequences (%XX), the 7-bit value is the hexadecimal value. The output is padded to
-//     * the right with zeros to total b bits, where b is the value specified in the
-//     * "Coding Segment Bit Count" (padding bits = b - 7N).</p>
-//     *
-//     * @param value - alphanumeric string to encode (may contain %XX escape sequences)
-//     * @param bits - total bit count for the binary output
-//     * @return binary string padded to specified bit length
-//     * @throws IllegalArgumentException if validation fails
-//     */
-//    public static String encodeString(final String value, final int bits) {
-//        if (value == null) {
-//            throw new IllegalArgumentException("Value cannot be null");
-//        }
-//
-//        final StringBuilder binary = new StringBuilder();
-//
-//        int i = 0;
-//        while (i < value.length()) {
-//            char c = value.charAt(i);
-//
-//            // Handle escape sequences (%XX)
-//            if (c == '%' && i + 2 < value.length()) {
-//                String hexPart = value.substring(i + 1, i + 3);
-//                try {
-//                    int hexValue = Integer.parseInt(hexPart, 16);
-//
-//                    // Validate: must map to one of the 82 allowed characters (Table A-1)
-//                    if (hexValue > 127) {
-//                        throw new IllegalArgumentException("Invalid escape sequence %%%s: value must be 0-127".formatted(hexPart));
-//                    }
-//
-//                    // Convert hex value to 7-bit binary
-//                    String bits7 = Integer.toBinaryString(hexValue);
-//                    binary.append("0".repeat(7 - bits7.length())).append(bits7);
-//                    i += 3; // Skip %XX
-//                } catch (NumberFormatException e) {
-//                    throw new IllegalArgumentException("Invalid escape sequence %%%s: not valid hexadecimal".formatted(hexPart)                    );
-//                }
-//            } else {
-//                // Single character - encode as 7-bit ASCII
-//                int asciiValue = (int) c;
-//
-//                // Validate: must be valid ASCII (0-127)
-//                if (asciiValue > 127) {
-//                    throw new IllegalArgumentException(
-//                        "Invalid character '%c': only ASCII characters (0-127) are allowed".formatted(c)
-//                    );
-//                }
-//
-//                // Convert to 7-bit binary
-//                String bits7 = Integer.toBinaryString(asciiValue);
-//                binary.append("0".repeat(7 - bits7.length())).append(bits7);
-//                i++;
-//            }
-//        }
-//
-//        // Validate: number of characters must be <= b/7
-//        int numCharacters = binary.length() / 7;
-//        int maxCharacters = bits / 7;
-//        if (numCharacters > maxCharacters) {
-//            throw new IllegalArgumentException("String has %d characters but maximum for %d bits is %d".formatted(numCharacters, bits, maxCharacters));
-//        }
-//
-//        // Pad to the right with zeros to reach total bit count
-//        int paddingBits = bits - binary.length();
-//        binary.append("0".repeat(paddingBits));
-//
-//        return binary.toString();
-//    }
-
-    /**
      * Decode a binary string to a alphanumeric string using GS1 String Decoding Method.
      *
      * @param binary - binary string to be decoded.
@@ -362,6 +268,101 @@ public class BinaryUtils {
 //        }
 //
 //        return result.toString();
+//    }
+
+    /**
+     * Encodes an alphanumeric string to a binary string using GS1 String Decoding Method.
+     *
+     * @param value    - binary string to be decoded.
+     * @param bits     - total bit count for the binary output
+     * @param encoding - encoding bits, 6 bits or 7 bits
+     * @return decoded alphanumeric string (may contain %XX escape sequence)
+     * @throws IllegalArgumentException if validation fails
+     */
+    public static String encodeString(final String value, final int bits, final int encoding) {
+        return switch (encoding) {
+            case 6 -> Encoding6Bit.encode(value, bits);
+            case 7 -> Encoding7Bit.encode(value, bits);
+            default -> throw new IllegalArgumentException("Unsupported '%d' bit encoding".formatted(encoding));
+        };
+    }
+
+//    /**
+//     * Encodes an alphanumeric string to binary using GS1 String Encoding Method.
+//     *
+//     * <p>The String encoding method is used for a segment that appears as an alphanumeric
+//     * string in the URI, and as an ISO/IEC 646 [ISO646] (ASCII) encoded bit string in the
+//     * binary encoding.</p>
+//     *
+//     * <p>Each character is encoded as a 7-bit string according to Table A-1. For escape
+//     * sequences (%XX), the 7-bit value is the hexadecimal value. The output is padded to
+//     * the right with zeros to total b bits, where b is the value specified in the
+//     * "Coding Segment Bit Count" (padding bits = b - 7N).</p>
+//     *
+//     * @param value - alphanumeric string to encode (may contain %XX escape sequences)
+//     * @param bits - total bit count for the binary output
+//     * @return binary string padded to specified bit length
+//     * @throws IllegalArgumentException if validation fails
+//     */
+//    public static String encodeString(final String value, final int bits) {
+//        if (value == null) {
+//            throw new IllegalArgumentException("Value cannot be null");
+//        }
+//
+//        final StringBuilder binary = new StringBuilder();
+//
+//        int i = 0;
+//        while (i < value.length()) {
+//            char c = value.charAt(i);
+//
+//            // Handle escape sequences (%XX)
+//            if (c == '%' && i + 2 < value.length()) {
+//                String hexPart = value.substring(i + 1, i + 3);
+//                try {
+//                    int hexValue = Integer.parseInt(hexPart, 16);
+//
+//                    // Validate: must map to one of the 82 allowed characters (Table A-1)
+//                    if (hexValue > 127) {
+//                        throw new IllegalArgumentException("Invalid escape sequence %%%s: value must be 0-127".formatted(hexPart));
+//                    }
+//
+//                    // Convert hex value to 7-bit binary
+//                    String bits7 = Integer.toBinaryString(hexValue);
+//                    binary.append("0".repeat(7 - bits7.length())).append(bits7);
+//                    i += 3; // Skip %XX
+//                } catch (NumberFormatException e) {
+//                    throw new IllegalArgumentException("Invalid escape sequence %%%s: not valid hexadecimal".formatted(hexPart)                    );
+//                }
+//            } else {
+//                // Single character - encode as 7-bit ASCII
+//                int asciiValue = (int) c;
+//
+//                // Validate: must be valid ASCII (0-127)
+//                if (asciiValue > 127) {
+//                    throw new IllegalArgumentException(
+//                        "Invalid character '%c': only ASCII characters (0-127) are allowed".formatted(c)
+//                    );
+//                }
+//
+//                // Convert to 7-bit binary
+//                String bits7 = Integer.toBinaryString(asciiValue);
+//                binary.append("0".repeat(7 - bits7.length())).append(bits7);
+//                i++;
+//            }
+//        }
+//
+//        // Validate: number of characters must be <= b/7
+//        int numCharacters = binary.length() / 7;
+//        int maxCharacters = bits / 7;
+//        if (numCharacters > maxCharacters) {
+//            throw new IllegalArgumentException("String has %d characters but maximum for %d bits is %d".formatted(numCharacters, bits, maxCharacters));
+//        }
+//
+//        // Pad to the right with zeros to reach total bit count
+//        int paddingBits = bits - binary.length();
+//        binary.append("0".repeat(paddingBits));
+//
+//        return binary.toString();
 //    }
 
     /* --- Helpers --- */

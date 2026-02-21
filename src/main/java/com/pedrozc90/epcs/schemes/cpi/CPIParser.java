@@ -185,7 +185,10 @@ public class CPIParser implements EpcParser<CPI> {
             // cpi-var
             case BITS_VARIABLE -> {
                 bin.append(BinaryUtils.encodeString(data.componentPartReference, 6 * data.componentPartReference.length(), 6));
+
+                // add the 'terminator'
                 bin.append("000000");
+
                 bin.append(BinaryUtils.encodeInteger(data.serial, data.tagSize.getSerialBitCount()));
             }
         }
@@ -193,12 +196,10 @@ public class CPIParser implements EpcParser<CPI> {
         // Calculate remainder AFTER building the complete binary
         // remainder = (int) (Math.ceil((bin.length() / 16.0)) * 16) - bin.length();
         final int remainder = remainder(bin.length());
-//        if (remainder > 0) {
-//            bin.append(Converter.fill("0", remainder));
-//        }
-        final String binary = StringUtils.rightPad(bin.toString(), bin.length() + remainder, '0');
 
-        return new BinaryResult(binary, remainder);
+        final String out = StringUtils.rightPad(bin.toString(), bin.length() + remainder, '0');
+
+        return new BinaryResult(out, remainder);
     }
 
     private CPI toCPI(final ParsedData data) {

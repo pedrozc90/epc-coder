@@ -18,13 +18,15 @@ public class Encoding7Bit {
     // 7-bit binary string to character mapping
     private static final Map<String, Character> BINARY_TO_CHAR = new HashMap<>();
 
+    private static final Map<Character, String> _escapes = new HashMap<>();
+
     static {
         // Initialize the character mapping table based on GS1 specification
         // Special characters
         addMapping('!', "0100001");  // 0x21 - Exclamation Mark
-        addMapping('"', "0100010");  // 0x22 - Quotation Mark
-        addMapping('%', "0100101");  // 0x25 - Percent Sign
-        addMapping('&', "0100110");  // 0x26 - Ampersand
+        addMapping('"', "0100010", "%22");  // 0x22 - Quotation Mark (%22)
+        addMapping('%', "0100101", "%25");  // 0x25 - Percent Sign (%25)
+        addMapping('&', "0100110", "%26");  // 0x26 - Ampersand (%26)
         addMapping('\'', "0100111"); // 0x27 - Apostrophe
         addMapping('(', "0101000");  // 0x28 - Left Parenthesis
         addMapping(')', "0101001");  // 0x29 - Right Parenthesis
@@ -33,7 +35,7 @@ public class Encoding7Bit {
         addMapping(',', "0101100");  // 0x2C - Comma
         addMapping('-', "0101101");  // 0x2D - Hyphen/Minus
         addMapping('.', "0101110");  // 0x2E - Full Stop
-        addMapping('/', "0101111");  // 0x2F - Solidus
+        addMapping('/', "0101111", "%2F");  // 0x2F - Solidus (%2F)
 
         // Digits 0-9
         addMapping('0', "0110000");  // 0x30
@@ -50,10 +52,10 @@ public class Encoding7Bit {
         // More special characters
         addMapping(':', "0111010");  // 0x3A - Colon
         addMapping(';', "0111011");  // 0x3B - Semicolon
-        addMapping('<', "0111100");  // 0x3C - Less-than Sign
+        addMapping('<', "0111100", "%3C");  // 0x3C - Less-than Sign (%3C)
         addMapping('=', "0111101");  // 0x3D - Equals Sign
-        addMapping('>', "0111110");  // 0x3E - Greater-than Sign
-        addMapping('?', "0111111");  // 0x3F - Question Mark
+        addMapping('>', "0111110", "%3E");  // 0x3E - Greater-than Sign (%3E)
+        addMapping('?', "0111111", "%3F");  // 0x3F - Question Mark (%3F)
 
         // Capital Letters A-Z
         addMapping('A', "1000001");  // 0x41
@@ -115,12 +117,19 @@ public class Encoding7Bit {
         addMapping('z', "1111010");  // 0x7A
     }
 
-    private static void addMapping(final char character, final String binary) {
+    private static void addMapping(final char character, final String binary, final String escape) {
         if (binary.length() != 7) {
             throw new IllegalArgumentException("Binary value must be exactly 7 bits");
         }
         CHAR_TO_BINARY.put(character, binary);
         BINARY_TO_CHAR.put(binary, character);
+        if (escape != null) {
+            _escapes.put(character, escape);
+        }
+    }
+
+    private static void addMapping(final char character, final String binary) {
+        addMapping(character, binary, null);
     }
 
     /**
@@ -133,21 +142,45 @@ public class Encoding7Bit {
      */
     public static String encode(final String value, final int bits) {
         if (value == null || value.isEmpty()) {
-            // throw new IllegalArgumentException("Input string cannot be null or empty");
+            throw new IllegalArgumentException("Input string cannot be null or empty");
             // all zeros for empty string
-            return "0".repeat(bits);
+            // return "0".repeat(bits);
         }
 
         final StringBuilder out = new StringBuilder(value.length() * 7);
 
         final int length = value.length();
-        for (int i = 0; i < length; i++) {
+
+        int i = 0;
+        while (i < length) {
             final char c = value.charAt(i);
-            final String bin = CHAR_TO_BINARY.get(c);
-            if (bin == null) {
-                throw new IllegalArgumentException("Invalid character: '%c' (not in GS1 character set)".formatted(c));
+
+            // check for percent-encoded sequence (%XX)
+            if (c == '%' && i + 2 < length) {
+                final String sub = value.substring(i + 1, i + 3);
+                try {
+                    // parse hex value and convert to character
+                    final int hex = Integer.parseInt(sub, 16);
+                    final char cDecoded = (char) hex;
+
+                    // Encode the decoded character
+                    final String bin = CHAR_TO_BINARY.get(cDecoded);
+                    if (bin == null) {
+                        throw new IllegalArgumentException("Invalid percent-encoded character: %%%s (U+%04X) not in GS1 character set".formatted(sub, hex));
+                    }
+                    out.append(bin);
+                    i += 3; // Skip %XX
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Invalid percent encoding: '%s'".formatted(sub));
+                }
+            } else {
+                final String bin = CHAR_TO_BINARY.get(c);
+                if (bin == null) {
+                    throw new IllegalArgumentException("Invalid character: '%c' (not in GS1 character set)".formatted(c));
+                }
+                out.append(bin);
+                i++;
             }
-            out.append(bin);
         }
 
         // Validate: total bits must fit

@@ -4,14 +4,14 @@ import com.pedrozc90.epcs.schemes.gdti.enums.GDTIFilterValue;
 import com.pedrozc90.epcs.schemes.gdti.enums.GDTITagSize;
 import com.pedrozc90.epcs.schemes.gdti.objects.GDTI;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GDTIParserTest {
 
@@ -54,6 +54,32 @@ public class GDTIParserTest {
                 "9521141",
                 "98765",
                 "ABCDefgh012345678",
+                176
+            ),
+            Arguments.arguments(
+                "3E74257BF7039B058C2650D9F8600000000000000000",
+                "urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3x0",
+                "urn:epc:id:gdti:0614141.98765.A1B2C3x0",
+                "gdti",
+                "174",
+                "3",
+                "7",
+                "0614141",
+                "98765",
+                "A1B2C3x0",
+                176
+            ),
+            Arguments.arguments(
+                "3E74257BF7039B058C2650D9F860FC00000000000000",
+                "urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3x0%3F",
+                "urn:epc:id:gdti:0614141.98765.A1B2C3x0%3F",
+                "gdti",
+                "174",
+                "3",
+                "7",
+                "0614141",
+                "98765",
+                "A1B2C3x0?",
                 176
             )
         );
@@ -166,6 +192,19 @@ public class GDTIParserTest {
         assertEquals(expectedDocType, result.docType());
         assertEquals(expectedSerial, result.serial());
         assertEquals(expectedBitCount, result.binary().length());
+    }
+
+    @DisplayName("Decode Invliad Epc Tag URI")
+    @Test
+    public void decode_EpcTagURI_WithInvalidCharacter() throws Exception {
+        final IllegalArgumentException cause = assertThrows(
+            IllegalArgumentException.class,
+            () -> GDTIParser.Builder()
+                .withEpcTagURI("urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3x0?")
+                .build()
+        );
+
+        assertNotNull(cause);
     }
 
     @DisplayName("Decode Epc Pure Identity URI")

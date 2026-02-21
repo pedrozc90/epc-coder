@@ -47,8 +47,8 @@ public class CPIParserTest {
             ),
             Arguments.arguments(
                 "3D76451FD75411DEF6B4CC00000003039000",
-                "urn:epc:tag:cpi-var:3.9521141.5PQ7/Z43.12345",
-                "urn:epc:id:cpi:9521141.5PQ7/Z43.12345",
+                "urn:epc:tag:cpi-var:3.9521141.5PQ7%2FZ43.12345",
+                "urn:epc:id:cpi:9521141.5PQ7%2FZ43.12345",
                 "cpi",
                 "var",
                 "3",

@@ -10,6 +10,7 @@ import com.pedrozc90.epcs.schemes.gdti.enums.GDTITagSize;
 import com.pedrozc90.epcs.schemes.gdti.objects.GDTI;
 import com.pedrozc90.epcs.schemes.gdti.partitionTable.GDTIPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
+import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -169,10 +170,12 @@ public class GDTIParser implements EpcParser<GDTI> {
 
         // gdti-96
         if (data.tagSize.getValue() == 96) {
+            // the remainder is always '0'
             bin.append(BinaryUtils.encodeInteger(data.serial, data.tagSize.getSerialBitCount() + remainder));
         }
         // gdti-198
         else if (data.tagSize.getValue() == 174) {
+            // the remainder is always '2', 174 + 2 = 176
             bin.append(BinaryUtils.encodeString(data.serial, data.tagSize.getSerialBitCount() + remainder, 7));
         }
 
@@ -197,12 +200,9 @@ public class GDTIParser implements EpcParser<GDTI> {
     }
 
     private void validateDocType(final TableItem tableItem, final String docType) {
-        if (docType.length() != tableItem.digits()) {
-            throw new IllegalArgumentException("Asset Type \"%s\" has %d length and should have %d length".formatted(
-                docType,
-                docType.length(),
-                tableItem.digits()
-            ));
+        final int docTypeLength = docType.length();
+        if (docTypeLength != tableItem.digits()) {
+            throw new IllegalArgumentException("Document Type \"%s\" has %d length and should have %d length".formatted(docType, docTypeLength, tableItem.digits()));
         }
     }
 
