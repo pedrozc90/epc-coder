@@ -6,12 +6,12 @@ import com.pedrozc90.epcs.schemes.gdti.objects.GDTI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GDTIParserTest {
 
@@ -55,6 +55,32 @@ public class GDTIParserTest {
                 "98765",
                 "ABCDefgh012345678",
                 176
+            ),
+            Arguments.arguments(
+                "3E74257BF7039B058C2650D9F8600000000000000000",
+                "urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3x0",
+                "urn:epc:id:gdti:0614141.98765.A1B2C3x0",
+                "gdti",
+                "174",
+                "3",
+                "7",
+                "0614141",
+                "98765",
+                "A1B2C3x0",
+                176
+            ),
+            Arguments.arguments(
+                "3E74257BF7039B058C2650D9F860FC00000000000000",
+                "urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3x0%3F",
+                "urn:epc:id:gdti:0614141.98765.A1B2C3x0%3F",
+                "gdti",
+                "174",
+                "3",
+                "7",
+                "0614141",
+                "98765",
+                "A1B2C3x0?",
+                176
             )
         );
     }
@@ -78,7 +104,7 @@ public class GDTIParserTest {
         final GDTITagSize tagSize = GDTITagSize.of(Integer.parseInt(expectedTagSize));
         final GDTIFilterValue filterValue = GDTIFilterValue.of(Integer.parseInt(expectedFilterValue));
 
-        final GDTI result = GDTIParser.Builder()
+        final GDTI result = GDTIParser.builder()
             .withCompanyPrefix(expectedCompanyPrefix)
             .withDocType(expectedDocType)
             .withSerial(expectedSerial)
@@ -116,7 +142,7 @@ public class GDTIParserTest {
         final String expectedSerial,
         final Integer expectedBitCount
     ) throws Exception {
-        final GDTI result = GDTIParser.Builder()
+        final GDTI result = GDTIParser.builder()
             .withRFIDTag(expectedRfidTag)
             .build();
 
@@ -150,7 +176,7 @@ public class GDTIParserTest {
         final String expectedSerial,
         final Integer expectedBitCount
     ) throws Exception {
-        final GDTI result = GDTIParser.Builder()
+        final GDTI result = GDTIParser.builder()
             .withEpcTagURI(expectedEpcTagURI)
             .build();
 
@@ -187,7 +213,7 @@ public class GDTIParserTest {
         final GDTITagSize tagSize = GDTITagSize.of(Integer.parseInt(expectedTagSize));
         final GDTIFilterValue filterValue = GDTIFilterValue.of(Integer.parseInt(expectedFilterValue));
 
-        final GDTI result = GDTIParser.Builder()
+        final GDTI result = GDTIParser.builder()
             .withEpcPureIdentityURI(expectedEpcPureIdentityURI)
             .withTagSize(tagSize)
             .withFilterValue(filterValue)
@@ -205,6 +231,30 @@ public class GDTIParserTest {
         assertEquals(expectedDocType, result.docType());
         assertEquals(expectedSerial, result.serial());
         assertEquals(expectedBitCount, result.binary().length());
+    }
+
+    @DisplayName("Decode Epc Tag URI with invalid character")
+    @ParameterizedTest(name = "[{index}] Epc Tag URI: {0}")
+    @CsvSource(value = {
+        "urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3x0\", \"",
+        "urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3x0%, %",
+        "urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3x0&, &",
+        "urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3x0/, /",
+        "urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3x0<, <",
+        "urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3x0>, >",
+        "urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3x0?, ?",
+        "urn:epc:tag:gdti-174:3.0614141.98765.A1B2C3%x0, %",
+    })
+    public void decode_EpcTagURI_WithInvalidCharacter(final String epcTagURI, final String c) {
+        final IllegalArgumentException cause = assertThrows(
+            IllegalArgumentException.class,
+            () -> GDTIParser.builder()
+                .withEpcTagURI(epcTagURI)
+                .build()
+        );
+
+        assertNotNull(cause);
+        assertEquals("Invalid character '%s'".formatted(c), cause.getMessage());
     }
 
 }

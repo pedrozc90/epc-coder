@@ -10,6 +10,7 @@ import com.pedrozc90.epcs.schemes.grai.enums.GRAITagSize;
 import com.pedrozc90.epcs.schemes.grai.objects.GRAI;
 import com.pedrozc90.epcs.schemes.grai.partitionTable.GRAIPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
+import com.pedrozc90.epcs.utils.Encoding7Bit;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +24,7 @@ public class GRAIParser implements EpcParser<GRAI> {
 
     private final GRAI grai;
 
-    public static ChoiceStep Builder() throws Exception {
+    public static ChoiceStep builder() throws Exception {
         return new Steps();
     }
 
@@ -89,7 +90,7 @@ public class GRAIParser implements EpcParser<GRAI> {
         final String companyPrefix = matcher.group(4);
         final PrefixLength prefixLength = PrefixLength.of(companyPrefix.length());
         final String assetType = matcher.group(5);
-        final String serial = matcher.group(6);
+        final String serial = Encoding7Bit.normalize(matcher.group(6));
 
         validateSerial(tagSize, serial);
 
@@ -110,7 +111,7 @@ public class GRAIParser implements EpcParser<GRAI> {
         final String companyPrefix = matcher.group(2);
         final PrefixLength prefixLength = PrefixLength.of(companyPrefix.length());
         final String assetType = matcher.group(3);
-        final String serial = matcher.group(4);
+        final String serial = Encoding7Bit.normalize(matcher.group(4));
 
         final TableItem tableItem = partitionTable.getPartitionByL(prefixLength.getValue());
 
@@ -148,8 +149,8 @@ public class GRAIParser implements EpcParser<GRAI> {
             data.assetType,
             data.serial,
             Integer.toString(checkDigit),
-            "urn:epc:id:grai:%s.%s.%s".formatted(data.companyPrefix, data.assetType, data.serial),
-            "urn:epc:tag:grai-%s:%s.%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.assetType, data.serial),
+            "urn:epc:id:grai:%s.%s.%s".formatted(data.companyPrefix, data.assetType, Encoding7Bit.escape(data.serial)),
+            "urn:epc:tag:grai-%s:%s.%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.assetType, Encoding7Bit.escape(data.serial)),
             "urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + remainder, outputHex),
             outputBin,
             outputHex

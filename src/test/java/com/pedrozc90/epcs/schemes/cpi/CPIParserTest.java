@@ -6,12 +6,12 @@ import com.pedrozc90.epcs.schemes.cpi.objects.CPI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CPIParserTest {
 
@@ -47,8 +47,8 @@ public class CPIParserTest {
             ),
             Arguments.arguments(
                 "3D76451FD75411DEF6B4CC00000003039000",
-                "urn:epc:tag:cpi-var:3.9521141.5PQ7/Z43.12345",
-                "urn:epc:id:cpi:9521141.5PQ7/Z43.12345",
+                "urn:epc:tag:cpi-var:3.9521141.5PQ7%2FZ43.12345",
+                "urn:epc:id:cpi:9521141.5PQ7%2FZ43.12345",
                 "cpi",
                 "var",
                 "3",
@@ -97,7 +97,7 @@ public class CPIParserTest {
                 "3",
                 "7",
                 "0614141",
-                "12%23ABC",
+                "12#ABC",
                 "123456789",
                 "00111101011101000010010101111011111101110001110010100011000001000010000011000000000000000000011101011011110011010001010100000000",
                 128
@@ -124,7 +124,7 @@ public class CPIParserTest {
     ) throws Exception {
         final CPITagSize tagSize = CPITagSize.of(expectedBitCount);
         final CPIFilterValue filterValue = CPIFilterValue.of(Integer.parseInt(expectedFilterValue));
-        final CPI result = CPIParser.Builder()
+        final CPI result = CPIParser.builder()
             .withCompanyPrefix(expectedCompanyPrefix)
             .withComponentPartReference(expectedComponentPartReference)
             .withSerial(expectedSerial)
@@ -164,7 +164,7 @@ public class CPIParserTest {
         final String expectedBinary,
         final Integer expectedBitCount
     ) throws Exception {
-        final CPI result = CPIParser.Builder()
+        final CPI result = CPIParser.builder()
             .withRFIDTag(expectedRfidTag)
             .build();
 
@@ -200,7 +200,7 @@ public class CPIParserTest {
         final String expectedBinary,
         final Integer expectedBitCount
     ) throws Exception {
-        final CPI result = CPIParser.Builder()
+        final CPI result = CPIParser.builder()
             .withEpcTagURI(expectedEpcTagURI)
             .build();
 
@@ -239,7 +239,7 @@ public class CPIParserTest {
         final CPITagSize tagSize = CPITagSize.of(expectedBitCount);
         final CPIFilterValue filterValue = CPIFilterValue.of(Integer.parseInt(expectedFilterValue));
 
-        final CPI result = CPIParser.Builder()
+        final CPI result = CPIParser.builder()
             .withEpcPureIdentityURI(expectedEpcPureIdentityURI)
             .withTagSize(tagSize)
             .withFilterValue(filterValue)
@@ -258,6 +258,26 @@ public class CPIParserTest {
         assertEquals(expectedSerial, result.serial());
         assertEquals(expectedBinary, result.binary());
         assertEquals(expectedBitCount, result.binary().length());
+    }
+
+    @DisplayName("Decode Epc Tag URI with invalid character")
+    @ParameterizedTest(name = "[{index}] Epc Tag URI: {0}")
+    @CsvSource(value = {
+        "urn:epc:tag:cpi-var:7.0614141.A1B2/0F.123456789, /",
+        "urn:epc:tag:cpi-var:7.0614141.A1B2#0F.123456789, #",
+        "urn:epc:tag:cpi-var:7.0614141.A1B20F/.123456789, /",
+        "urn:epc:tag:cpi-var:7.0614141.A1B20F#.123456789, #",
+    })
+    public void decode_EpcTagURI_WithInvalidCharacter(final String epcTagURI, final String c) {
+        final IllegalArgumentException cause = assertThrows(
+            IllegalArgumentException.class,
+            () -> CPIParser.builder()
+                .withEpcTagURI(epcTagURI)
+                .build()
+        );
+
+        assertNotNull(cause);
+        assertEquals("Invalid character '%s'".formatted(c), cause.getMessage());
     }
 
 }

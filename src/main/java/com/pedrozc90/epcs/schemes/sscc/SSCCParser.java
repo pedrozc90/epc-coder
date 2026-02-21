@@ -26,7 +26,7 @@ public class SSCCParser implements EpcParser<SSCC> {
 
     private final SSCC sscc;
 
-    public static ChoiceStep Builder() throws Exception {
+    public static ChoiceStep builder() throws Exception {
         return new Steps();
     }
 

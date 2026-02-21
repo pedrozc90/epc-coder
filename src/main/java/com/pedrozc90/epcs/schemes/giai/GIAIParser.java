@@ -10,6 +10,7 @@ import com.pedrozc90.epcs.schemes.giai.enums.GIAITagSize;
 import com.pedrozc90.epcs.schemes.giai.objects.GIAI;
 import com.pedrozc90.epcs.schemes.giai.partitionTable.GIAIPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
+import com.pedrozc90.epcs.utils.Encoding7Bit;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,7 +22,7 @@ public class GIAIParser implements EpcParser<GIAI> {
 
     private final GIAI giai;
 
-    public static ChoiceStep Builder() {
+    public static ChoiceStep builder() {
         return new Steps();
     }
 
@@ -84,7 +85,7 @@ public class GIAIParser implements EpcParser<GIAI> {
         final GIAIFilterValue filterValue = GIAIFilterValue.of(Integer.parseInt(matcher.group(3)));
         final String companyPrefix = matcher.group(4);
         final PrefixLength prefixLength = PrefixLength.of(companyPrefix.length());
-        final String individualAssetReference = matcher.group(5);
+        final String individualAssetReference = Encoding7Bit.normalize(matcher.group(5));
 
         final GIAIPartitionTable partitionTable = GIAIPartitionTable.getInstance(tagSize);
         final TableItem tableItem = partitionTable.getPartitionByL(prefixLength.getValue());
@@ -105,7 +106,7 @@ public class GIAIParser implements EpcParser<GIAI> {
 
         final String companyPrefix = matcher.group(2);
         final PrefixLength prefixLength = PrefixLength.of(companyPrefix.length());
-        final String individualAssetReference = matcher.group(3);
+        final String individualAssetReference = Encoding7Bit.normalize(matcher.group(3));
 
         final GIAIPartitionTable partitionTable = GIAIPartitionTable.getInstance(tagSize);
         final TableItem tableItem = partitionTable.getPartitionByL(prefixLength.getValue());
@@ -141,8 +142,8 @@ public class GIAIParser implements EpcParser<GIAI> {
             Integer.toString(data.prefixLength.getValue()),
             data.companyPrefix,
             data.individualAssetReference,
-            "urn:epc:id:giai:%s.%s".formatted(data.companyPrefix, data.individualAssetReference),
-            "urn:epc:tag:giai-%s:%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.individualAssetReference),
+            "urn:epc:id:giai:%s.%s".formatted(data.companyPrefix, Encoding7Bit.escape(data.individualAssetReference)),
+            "urn:epc:tag:giai-%s:%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, Encoding7Bit.escape(data.individualAssetReference)),
             "urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + remainder, outputHex),
             outputBin,
             outputHex

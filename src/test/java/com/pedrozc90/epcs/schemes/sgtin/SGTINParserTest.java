@@ -14,7 +14,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.stream.Stream;
 
-import static com.pedrozc90.epcs.schemes.sgtin.SGTINParser.Builder;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SGTINParserTest {
@@ -55,8 +54,8 @@ public class SGTINParserTest {
             ),
             Arguments.arguments(
                 "3666C4409047E159B2C2BF100000000000000000000000000000",
-                "urn:epc:tag:sgtin-198:3.95060001343.05.32a/b",
-                "urn:epc:id:sgtin:95060001343.05.32a/b",
+                "urn:epc:tag:sgtin-198:3.95060001343.05.32a%2Fb",
+                "urn:epc:id:sgtin:95060001343.05.32a%2Fb",
                 "sgtin",
                 "198",
                 "3",
@@ -95,7 +94,7 @@ public class SGTINParserTest {
         final SGTINFilterValue filterValue = SGTINFilterValue.of(Integer.parseInt(expectedFilterValue));
         final SGTINExtensionDigit extensionDigit = SGTINExtensionDigit.of(Integer.parseInt(expectedExtensionDigit));
 
-        final SGTIN result = Builder()
+        final SGTIN result = SGTINParser.builder()
             .withCompanyPrefix(expectedCompanyPrefix)
             .withExtensionDigit(extensionDigit)
             .withItemReference(expectedItemReference)
@@ -140,7 +139,7 @@ public class SGTINParserTest {
         final String expectedSerial,
         final Integer expectedBitCount
     ) throws EpcParseException {
-        final SGTIN result = Builder()
+        final SGTIN result = SGTINParser.builder()
             .withRFIDTag(expectedRfidTag)
             .build();
 
@@ -180,7 +179,7 @@ public class SGTINParserTest {
         final String expectedSerial,
         final Integer expectedBitCount
     ) throws EpcParseException {
-        final SGTIN result = Builder()
+        final SGTIN result = SGTINParser.builder()
             .withEpcTagURI(expectedEpcTagURI)
             .build();
 
@@ -223,7 +222,7 @@ public class SGTINParserTest {
         final SGTINTagSize tagSize = SGTINTagSize.of(Integer.parseInt(expectedTagSize));
         final SGTINFilterValue filterValue = SGTINFilterValue.of(Integer.parseInt(expectedFilterValue));
 
-        final SGTIN result = Builder()
+        final SGTIN result = SGTINParser.builder()
             .withEpcPureIdentityURI(expectedEpcPureIdentityURI)
             .withTagSize(tagSize)
             .withFilterValue(filterValue)
@@ -254,7 +253,7 @@ public class SGTINParserTest {
         "303500C1C20044C80009FD8D8, 34360393101"
     })
     public void parseEpcSerial(final String rfidTag, final String expectedSerial) throws EpcParseException {
-        final SGTIN sgtin = Builder().withRFIDTag(rfidTag).build();
+        final SGTIN sgtin = SGTINParser.builder().withRFIDTag(rfidTag).build();
         assertEquals(expectedSerial, sgtin.serial());
     }
 
@@ -264,7 +263,7 @@ public class SGTINParserTest {
         // Add more test cases
     })
     public void parseEpcEan(final String rfidTag, final String expectedEan) throws EpcParseException {
-        final SGTIN sgtin = Builder().withRFIDTag(rfidTag).build();
+        final SGTIN sgtin = SGTINParser.builder().withRFIDTag(rfidTag).build();
         assertEquals(expectedEan, sgtin.companyPrefix() + sgtin.itemReference());
     }
 
@@ -275,7 +274,7 @@ public class SGTINParserTest {
         "303500C1C20044C80009FD8D8, 1"
     })
     public void parseEpcFilter(final String rfidTag, final String expectedFilter) throws EpcParseException {
-        final SGTIN sgtin = Builder().withRFIDTag(rfidTag).build();
+        final SGTIN sgtin = SGTINParser.builder().withRFIDTag(rfidTag).build();
         assertEquals(expectedFilter, sgtin.filterValue());
     }
 
@@ -285,7 +284,7 @@ public class SGTINParserTest {
         "3024698E2CB1005678901234, 1"
     })
     public void parseEpcPartition(final String rfidTag, final String expectedPartition) throws EpcParseException {
-        final SGTIN sgtin = Builder().withRFIDTag(rfidTag).build();
+        final SGTIN sgtin = SGTINParser.builder().withRFIDTag(rfidTag).build();
         assertEquals(expectedPartition, sgtin.partitionValue());
     }
 
@@ -299,7 +298,7 @@ public class SGTINParserTest {
     public void whenInvalidRfidTag_thenExceptionIsRaised(final String invalidRfidTag) {
         assertThrows(
             IllegalArgumentException.class,
-            () -> Builder().withRFIDTag(invalidRfidTag).build()
+            () -> SGTINParser.builder().withRFIDTag(invalidRfidTag).build()
         );
     }
 

@@ -45,8 +45,8 @@ public class SGLNParserTest {
             ),
             Arguments.arguments(
                 "3976451FD46072CD9615F8800000000000000000000000000000",
-                "urn:epc:tag:sgln-195:3.9521141.12345.32a/b",
-                "urn:epc:id:sgln:9521141.12345.32a/b",
+                "urn:epc:tag:sgln-195:3.9521141.12345.32a%2Fb",
+                "urn:epc:id:sgln:9521141.12345.32a%2Fb",
                 "sgln",
                 "195",
                 "3",
@@ -78,7 +78,7 @@ public class SGLNParserTest {
         final SGLNTagSize tagSize = SGLNTagSize.of(Integer.parseInt(expectedTagSize));
         final SGLNFilterValue filterValue = SGLNFilterValue.of(Integer.parseInt(expectedFilterValue));
 
-        final SGLN result = SGLNParser.Builder()
+        final SGLN result = SGLNParser.builder()
             .withCompanyPrefix(expectedCompanyPrefix)
             .withLocationReference(expectedLocationReference)
             .withExtension(expectedExtension)
@@ -116,7 +116,7 @@ public class SGLNParserTest {
         final String expectedExtension,
         final Integer expectedBitCount
     ) throws Exception {
-        final SGLN result = SGLNParser.Builder()
+        final SGLN result = SGLNParser.builder()
             .withRFIDTag(expectedRfidTag)
             .build();
 
@@ -150,7 +150,7 @@ public class SGLNParserTest {
         final String expectedExtension,
         final Integer expectedBitCount
     ) throws Exception {
-        final SGLN result = SGLNParser.Builder()
+        final SGLN result = SGLNParser.builder()
             .withEpcTagURI(expectedEpcTagURI)
             .build();
 
@@ -187,7 +187,7 @@ public class SGLNParserTest {
         final SGLNTagSize tagSize = SGLNTagSize.of(Integer.parseInt(expectedTagSize));
         final SGLNFilterValue filterValue = SGLNFilterValue.of(Integer.parseInt(expectedFilterValue));
 
-        final SGLN result = SGLNParser.Builder()
+        final SGLN result = SGLNParser.builder()
             .withEpcPureIdentityURI(expectedEpcPureIdentityURI)
             .withTagSize(tagSize)
             .withFilterValue(filterValue)

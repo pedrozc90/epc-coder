@@ -73,7 +73,7 @@ public class SSCCParserTest {
         final SSCCFilterValue filterValue = SSCCFilterValue.of(Integer.parseInt(expectedFilterValue));
         final SSCCExtensionDigit extensionDigit = SSCCExtensionDigit.of(Integer.parseInt(expectedExtensionDigit));
 
-        final SSCC result = SSCCParser.Builder()
+        final SSCC result = SSCCParser.builder()
             .withCompanyPrefix(expectedCompanyPrefix)
             .withExtensionDigit(extensionDigit)
             .withSerial(expectedSerial)
@@ -115,7 +115,7 @@ public class SSCCParserTest {
         final String expectedSerial,
         final Integer expectedBitCount
     ) throws Exception {
-        final SSCC result = SSCCParser.Builder()
+        final SSCC result = SSCCParser.builder()
             .withRFIDTag(expectedRfidTag)
             .build();
 
@@ -153,7 +153,7 @@ public class SSCCParserTest {
         final String expectedSerial,
         final Integer expectedBitCount
     ) throws Exception {
-        final SSCC result = SSCCParser.Builder()
+        final SSCC result = SSCCParser.builder()
             .withEpcTagURI(expectedEpcTagURI)
             .build();
 
@@ -194,7 +194,7 @@ public class SSCCParserTest {
         final SSCCTagSize tagSize = SSCCTagSize.of(Integer.parseInt(expectedTagSize));
         final SSCCFilterValue filterValue = SSCCFilterValue.of(Integer.parseInt(expectedFilterValue));
 
-        final SSCC result = SSCCParser.Builder()
+        final SSCC result = SSCCParser.builder()
             .withEpcPureIdentityURI(expectedEpcPureIdentityURI)
             .withTagSize(tagSize)
             .withFilterValue(filterValue)

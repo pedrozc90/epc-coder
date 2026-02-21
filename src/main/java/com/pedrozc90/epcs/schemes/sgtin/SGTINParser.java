@@ -11,6 +11,7 @@ import com.pedrozc90.epcs.schemes.sgtin.enums.SGTINTagSize;
 import com.pedrozc90.epcs.schemes.sgtin.objects.SGTIN;
 import com.pedrozc90.epcs.schemes.sgtin.partitionTable.SGTINPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
+import com.pedrozc90.epcs.utils.Encoding7Bit;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +25,7 @@ public class SGTINParser implements EpcParser<SGTIN> {
 
     private final SGTIN sgtin;
 
-    public static ChoiceStep Builder() {
+    public static ChoiceStep builder() {
         return new Steps();
     }
 
@@ -103,7 +104,7 @@ public class SGTINParser implements EpcParser<SGTIN> {
         final PrefixLength prefixLength = PrefixLength.of(companyPrefix.length());
         final SGTINExtensionDigit extensionDigit = SGTINExtensionDigit.of(Integer.parseInt(matcher.group(5)));
         final String itemReference = matcher.group(6);
-        final String serial = matcher.group(7);
+        final String serial = Encoding7Bit.normalize(matcher.group(7));
 
         final TableItem tableItem = partitionTable.getPartitionByL(prefixLength.getValue());
 
@@ -122,7 +123,8 @@ public class SGTINParser implements EpcParser<SGTIN> {
         final PrefixLength prefixLength = PrefixLength.of(matcher.group(2).length());
         final SGTINExtensionDigit extensionDigit = SGTINExtensionDigit.of(Integer.parseInt(matcher.group(3)));
         final String itemReference = matcher.group(4);
-        final String serial = matcher.group(5);
+        final String serial = Encoding7Bit.normalize(matcher.group(5));
+
         final TableItem tableItem = partitionTable.getPartitionByL(prefixLength.getValue());
 
         return new ParsedData(tableItem, tagSize, filterValue, extensionDigit, prefixLength, companyPrefix, itemReference, serial);
@@ -183,8 +185,8 @@ public class SGTINParser implements EpcParser<SGTIN> {
             Integer.toString(data.extensionDigit.getValue()),
             data.serial,
             Integer.toString(checkDigit),
-            "urn:epc:id:sgtin:%s.%s%s.%s".formatted(data.companyPrefix, data.extensionDigit.getValue(), data.itemReference, data.serial),
-            "urn:epc:tag:sgtin-%s:%s.%s.%s%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.extensionDigit.getValue(), data.itemReference, data.serial),
+            "urn:epc:id:sgtin:%s.%s%s.%s".formatted(data.companyPrefix, data.extensionDigit.getValue(), data.itemReference, Encoding7Bit.escape(data.serial)),
+            "urn:epc:tag:sgtin-%s:%s.%s.%s%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.extensionDigit.getValue(), data.itemReference, Encoding7Bit.escape(data.serial)),
             "urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + result.remainder, outputHex),
             outputBin,
             outputHex

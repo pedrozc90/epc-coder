@@ -10,6 +10,7 @@ import com.pedrozc90.epcs.schemes.sgln.enums.SGLNTagSize;
 import com.pedrozc90.epcs.schemes.sgln.objects.SGLN;
 import com.pedrozc90.epcs.schemes.sgln.partitionTable.SGLNPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
+import com.pedrozc90.epcs.utils.Encoding7Bit;
 import lombok.Getter;
 
 import java.util.regex.Matcher;
@@ -29,7 +30,7 @@ public class SGLNParser implements EpcParser<SGLN> {
         sgln = toSGLN(data);
     }
 
-    public static ChoiceStep Builder() throws Exception {
+    public static ChoiceStep builder() throws Exception {
         return new Steps();
     }
 
@@ -89,7 +90,7 @@ public class SGLNParser implements EpcParser<SGLN> {
         final String companyPrefix = matcher.group(4);
         final PrefixLength prefixLength = PrefixLength.of(companyPrefix.length());
         final String locationReference = matcher.group(5);
-        final String extension = matcher.group(6);
+        final String extension = Encoding7Bit.normalize(matcher.group(6));
 
         final TableItem tableItem = partitionTable.getPartitionByL(prefixLength.getValue());
 
@@ -112,7 +113,7 @@ public class SGLNParser implements EpcParser<SGLN> {
         final String companyPrefix = matcher.group(2);
         final PrefixLength prefixLength = PrefixLength.of(companyPrefix.length());
         final String locationReference = matcher.group(3);
-        final String extension = matcher.group(4);
+        final String extension = Encoding7Bit.normalize(matcher.group(4));
 
         final TableItem tableItem = partitionTable.getPartitionByL(prefixLength.getValue());
 
@@ -155,8 +156,8 @@ public class SGLNParser implements EpcParser<SGLN> {
             data.locationReference,
             data.extension,
             Integer.toString(checkDigit),
-            "urn:epc:id:sgln:%s.%s.%s".formatted(data.companyPrefix, data.locationReference, data.extension),
-            "urn:epc:tag:sgln-%s:%s.%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.locationReference, data.extension),
+            "urn:epc:id:sgln:%s.%s.%s".formatted(data.companyPrefix, data.locationReference, Encoding7Bit.escape(data.extension)),
+            "urn:epc:tag:sgln-%s:%s.%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.locationReference, Encoding7Bit.escape(data.extension)),
             "urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + remainder, outputHex),
             outputBin,
             outputHex

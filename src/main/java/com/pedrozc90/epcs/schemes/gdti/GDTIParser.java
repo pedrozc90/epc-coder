@@ -10,20 +10,21 @@ import com.pedrozc90.epcs.schemes.gdti.enums.GDTITagSize;
 import com.pedrozc90.epcs.schemes.gdti.objects.GDTI;
 import com.pedrozc90.epcs.schemes.gdti.partitionTable.GDTIPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
+import com.pedrozc90.epcs.utils.Encoding7Bit;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GDTIParser implements EpcParser<GDTI> {
 
-    private static final Pattern TAG_URI_PATTERN = Pattern.compile("(urn:epc:tag:gdti-)(96|174):([0-7])\\.(\\d+)\\.(\\d+)\\.(\\w+)");
-    private static final Pattern PURE_IDENTITY_URI_PATTERN = Pattern.compile("(urn:epc:id:gdti):(\\d+)\\.(\\d+)\\.(\\w+)");
+    private static final Pattern TAG_URI_PATTERN = Pattern.compile("(urn:epc:tag:gdti-)(96|174):([0-7])\\.(\\d+)\\.(\\d+)\\.(.+)");
+    private static final Pattern PURE_IDENTITY_URI_PATTERN = Pattern.compile("(urn:epc:id:gdti):(\\d+)\\.(\\d+)\\.(.+)");
 
     private static final GDTIPartitionTable partitionTable = new GDTIPartitionTable();
 
     private final GDTI gdti;
 
-    public static ChoiceStep Builder() {
+    public static ChoiceStep builder() {
         return new Steps();
     }
 
@@ -89,7 +90,7 @@ public class GDTIParser implements EpcParser<GDTI> {
         final String companyPrefix = matcher.group(4);
         final PrefixLength prefixLength = PrefixLength.of(companyPrefix.length());
         final String docType = matcher.group(5);
-        final String serial = matcher.group(6);
+        final String serial = Encoding7Bit.normalize(matcher.group(6));
 
         final TableItem tableItem = partitionTable.getPartitionByL(prefixLength.getValue());
 
@@ -108,7 +109,7 @@ public class GDTIParser implements EpcParser<GDTI> {
         final String companyPrefix = matcher.group(2);
         final PrefixLength prefixLength = PrefixLength.of(companyPrefix.length());
         final String docType = matcher.group(3);
-        final String serial = matcher.group(4);
+        final String serial = Encoding7Bit.normalize(matcher.group(4));
 
         final TableItem tableItem = partitionTable.getPartitionByL(prefixLength.getValue());
 
@@ -147,8 +148,8 @@ public class GDTIParser implements EpcParser<GDTI> {
             data.docType,
             data.serial,
             Integer.toString(checkDigit),
-            "urn:epc:id:gdti:%s.%s.%s".formatted(data.companyPrefix, data.docType, data.serial),
-            "urn:epc:tag:gdti-%s:%s.%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.docType, data.serial),
+            "urn:epc:id:gdti:%s.%s.%s".formatted(data.companyPrefix, data.docType, Encoding7Bit.escape(data.serial)),
+            "urn:epc:tag:gdti-%s:%s.%s.%s.%s".formatted(data.tagSize.getValue(), data.filterValue.getValue(), data.companyPrefix, data.docType, Encoding7Bit.escape(data.serial)),
             "urn:epc:raw:%s.x%s".formatted(data.tagSize.getValue() + remainder, outputHex),
             outputBin,
             outputHex
@@ -169,10 +170,12 @@ public class GDTIParser implements EpcParser<GDTI> {
 
         // gdti-96
         if (data.tagSize.getValue() == 96) {
+            // the remainder is always '0'
             bin.append(BinaryUtils.encodeInteger(data.serial, data.tagSize.getSerialBitCount() + remainder));
         }
         // gdti-198
         else if (data.tagSize.getValue() == 174) {
+            // the remainder is always '2', 174 + 2 = 176
             bin.append(BinaryUtils.encodeString(data.serial, data.tagSize.getSerialBitCount() + remainder, 7));
         }
 
@@ -197,12 +200,9 @@ public class GDTIParser implements EpcParser<GDTI> {
     }
 
     private void validateDocType(final TableItem tableItem, final String docType) {
-        if (docType.length() != tableItem.digits()) {
-            throw new IllegalArgumentException("Asset Type \"%s\" has %d length and should have %d length".formatted(
-                docType,
-                docType.length(),
-                tableItem.digits()
-            ));
+        final int docTypeLength = docType.length();
+        if (docTypeLength != tableItem.digits()) {
+            throw new IllegalArgumentException("Document Type \"%s\" has %d length and should have %d length".formatted(docType, docTypeLength, tableItem.digits()));
         }
     }
 

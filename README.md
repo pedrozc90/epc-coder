@@ -27,66 +27,73 @@ A lightweight and fast Java library for encoding and decoding RFID EPC (Electron
 
 ## Usage
 
-### Encode from components
+### Encode
 
 ```java
-public class Main {
-    public static void main(final String[] args) {
-        final SSCC sscc = ParseSSCC.Builder()
-            .withCompanyPrefix("023356789")
-            .withExtensionDigit(SSCCExtensionDigit.EXTENSION_3)
-            .withSerial("0200002")
-            .withTagSize(SSCCTagSize.BITS_96)
-            .withFilterValue(SSCCFilterValue.RESERVED_5)
-            .build();
+// sgtin-96
+final SGTIN sgtin = SGTINParser.builder()
+    .withCompanyPrefix("0614141")
+    .withExtensionDigit(SGTINExtensionDigit.EXTENSION_8)
+    .withItemReference("12345")
+    .withSerial("6789")
+    .withTagSize(SGTINTagSize.BITS_96)
+    .withFilterValue(SGTINFilterValue.RESERVED_5)
+    .build();
 
-        System.out.println("EPC: " + sscc.getRfidTag());
-    }
-}
+final String rfid = sgtin.rfidTag();    // "3074257BF7194E4000001A85"
+final String uri = sgtin.epcTagURI();   // "urn:epc:tag:sgtin-96:3.0614141.812345.6789"
 ```
 
-### Decode from RFID tag
+### Decode RFID Tag
 
 ```java
-public class Main {
-    public static void main(final String[] args) {
-        final SSCC sscc = ParseSSCC.Builder()
-            .withRFIDTag("31AC16465751CCD0C2000000")
-            .build();
-        
-        System.out.println("EPC: " + sscc.getRfidTag());
-    }
-}
+// sgtin-96
+final SGTIN sgtin = ParseSGTIN.builder()
+    .withRFIDTag("3074257BF7194E4000001A85")
+    .build();
+
+final String companyPrefix = sgtin.companyPrefix();
+final String itemReference = sgtin.itemReference();
+final String serial = sgtin.serial();
+
+// sscc-96
+final SSCC sscc = ParseSSCC.builder()
+    .withRFIDTag("31AC16465751CCD0C2000000")
+    .build();
+
+final String companyPrefix = sscc.companyPrefix();
+final String itemReference = sscc.itemReference();
+final String serial = sscc.serial();
 ```
 
-### Parse from EPC Tag URI
+### Decode EPC Tag URI
 
 ```java
-public class Main {
-    public static void main(final String[] args) {
-        final SSCC sscc = ParseSSCC.Builder()
-            .withEpcTagURI("urn:epc:tag:sscc-96:5.023356789.30200002")
-            .build();
-        
-        System.out.println("EPC: " + sscc.getRfidTag());
-    }
-}
+// sscc-96
+final SSCC sscc = ParseSSCC.builder()
+    .withEpcTagURI("urn:epc:tag:sscc-96:5.023356789.30200002")
+    .build();
+
+final String rfid = sscc.rfidTag();
+final String companyPrefix = sscc.companyPrefix();
+final String itemReference = sscc.itemReference();
+final String serial = sscc.serial();
 ```
 
-### Parse from EPC Pure Identity URI
+### Decode EPC Pure Identity URI
 
 ```java
-public class Main {
-    public static void main(final String[] args) {
-        final SSCC sscc = ParseSSCC.Builder()
-            .withEpcPureIdentityURI("urn:epc:id:sscc:023356789.30200002")
-            .withTagSize(SSCCTagSize.BITS_96)
-            .withFilterValue(SSCCFilterValue.RESERVED_5)
-            .build();
-        
-        System.out.println("epc: " + sscc.getRfidTag());
-    }
-}
+// sscc-96
+final SSCC sscc = ParseSSCC.builder()
+    .withEpcPureIdentityURI("urn:epc:id:sscc:023356789.30200002")
+    .withTagSize(SSCCTagSize.BITS_96)
+    .withFilterValue(SSCCFilterValue.RESERVED_5)
+    .build();
+
+final String rfid = sscc.rfidTag();
+final String companyPrefix = sscc.companyPrefix();
+final String itemReference = sscc.itemReference();
+final String serial = sscc.serial();
 ```
 
 ## License

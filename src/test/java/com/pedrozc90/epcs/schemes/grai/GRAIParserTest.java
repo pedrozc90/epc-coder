@@ -44,8 +44,8 @@ public class GRAIParserTest {
             ),
             new ExpectedData(
                 "3776451FD40C0E59B2C2BF1000000000000000000000",
-                "urn:epc:tag:grai-170:3.9521141.12345.32a/b",
-                "urn:epc:id:grai:9521141.12345.32a/b",
+                "urn:epc:tag:grai-170:3.9521141.12345.32a%2Fb",
+                "urn:epc:id:grai:9521141.12345.32a%2Fb",
                 "grai",
                 "170",
                 "3",
@@ -65,7 +65,7 @@ public class GRAIParserTest {
         final GRAITagSize tagSize = GRAITagSize.of(Integer.parseInt(data.tagSize));
         final GRAIFilterValue filterValue = GRAIFilterValue.of(Integer.parseInt(data.filterValue));
 
-        final GRAI result = GRAIParser.Builder()
+        final GRAI result = GRAIParser.builder()
             .withCompanyPrefix(data.companyPrefix)
             .withAssetType(data.assetType)
             .withSerial(data.serial)
@@ -80,7 +80,7 @@ public class GRAIParserTest {
     @ParameterizedTest(name = "[{index}] RFID Tag: {0}")
     @MethodSource("provideData")
     public void decode_RFIDTag(final ExpectedData data) throws Exception {
-        final GRAI result = GRAIParser.Builder()
+        final GRAI result = GRAIParser.builder()
             .withRFIDTag(data.rfidTag)
             .build();
 
@@ -91,7 +91,7 @@ public class GRAIParserTest {
     @ParameterizedTest(name = "[{index}] Epc Tag URI: {0}")
     @MethodSource("provideData")
     public void decode_EpcTagURI(final ExpectedData data) throws Exception {
-        final GRAI result = GRAIParser.Builder()
+        final GRAI result = GRAIParser.builder()
             .withEpcTagURI(data.epcTagURI)
             .build();
 
@@ -105,7 +105,7 @@ public class GRAIParserTest {
         final GRAITagSize tagSize = GRAITagSize.of(Integer.parseInt(data.tagSize));
         final GRAIFilterValue filterValue = GRAIFilterValue.of(Integer.parseInt(data.filterValue));
 
-        final GRAI result = GRAIParser.Builder()
+        final GRAI result = GRAIParser.builder()
             .withEpcPureIdentityURI(data.epcPureIdentityURI)
             .withTagSize(tagSize)
             .withFilterValue(filterValue)

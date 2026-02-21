@@ -43,8 +43,8 @@ public class GIAIParserTest {
             ),
             Arguments.arguments(
                 "3876451FD59B2C2BF10000000000000000000000000000000000",
-                "urn:epc:tag:giai-202:3.9521141.32a/b",
-                "urn:epc:id:giai:9521141.32a/b",
+                "urn:epc:tag:giai-202:3.9521141.32a%2Fb",
+                "urn:epc:id:giai:9521141.32a%2Fb",
                 "giai",
                 "202",
                 "3",
@@ -74,7 +74,7 @@ public class GIAIParserTest {
         final GIAITagSize tagSize = GIAITagSize.of(Integer.parseInt(expectedTagSize));
         final GIAIFilterValue filterValue = GIAIFilterValue.of(Integer.parseInt(expectedFilterValue));
 
-        final GIAI result = GIAIParser.Builder()
+        final GIAI result = GIAIParser.builder()
             .withCompanyPrefix(expectedCompanyPrefix)
             .withIndividualAssetReference(expectedIndividualAssetReference)
             .withTagSize(tagSize)
@@ -109,7 +109,7 @@ public class GIAIParserTest {
         final String expectedIndividualAssetReference,
         final Integer expectedBitCount
     ) throws Exception {
-        final GIAI result = GIAIParser.Builder()
+        final GIAI result = GIAIParser.builder()
             .withRFIDTag(expectedRfidTag)
             .build();
 
@@ -141,7 +141,7 @@ public class GIAIParserTest {
         final String expectedIndividualAssetReference,
         final Integer expectedBitCount
     ) throws Exception {
-        final GIAI result = GIAIParser.Builder()
+        final GIAI result = GIAIParser.builder()
             .withEpcTagURI(expectedEpcTagURI)
             .build();
 
@@ -176,7 +176,7 @@ public class GIAIParserTest {
         final GIAITagSize tagSize = GIAITagSize.of(Integer.parseInt(expectedTagSize));
         final GIAIFilterValue filterValue = GIAIFilterValue.of(Integer.parseInt(expectedFilterValue));
 
-        final GIAI result = GIAIParser.Builder()
+        final GIAI result = GIAIParser.builder()
             .withEpcPureIdentityURI(expectedEpcPureIdentityURI)
             .withTagSize(tagSize)
             .withFilterValue(filterValue)

@@ -24,7 +24,7 @@ public class GSRNParser implements EpcParser<GSRN> {
 
     private final GSRN gsrn;
 
-    public static ChoiceStep Builder() throws Exception {
+    public static ChoiceStep builder() throws Exception {
         return new Steps();
     }
 

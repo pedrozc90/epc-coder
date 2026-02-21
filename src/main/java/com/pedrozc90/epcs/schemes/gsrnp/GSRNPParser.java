@@ -24,7 +24,7 @@ public class GSRNPParser implements EpcParser<GSRNP> {
 
     private final GSRNP gsrnp;
 
-    public static ChoiceStep Builder() {
+    public static ChoiceStep builder() {
         return new Steps();
     }
 

@@ -10,6 +10,7 @@ import com.pedrozc90.epcs.schemes.cpi.enums.CPITagSize;
 import com.pedrozc90.epcs.schemes.cpi.objects.CPI;
 import com.pedrozc90.epcs.schemes.cpi.partitionTable.CPIPartitionTable;
 import com.pedrozc90.epcs.utils.BinaryUtils;
+import com.pedrozc90.epcs.utils.Encoding6Bit;
 import com.pedrozc90.epcs.utils.StringUtils;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class CPIParser implements EpcParser<CPI> {
 
     private final CPI cpi;
 
-    public static ChoiceStep Builder() throws Exception {
+    public static ChoiceStep builder() throws Exception {
         return new Steps();
     }
 
@@ -122,7 +123,7 @@ public class CPIParser implements EpcParser<CPI> {
         final CPIFilterValue filterValue = CPIFilterValue.of(Integer.parseInt(matcher.group(3)));
         final String companyPrefix = matcher.group(4);
         final PrefixLength prefixLength = PrefixLength.of(companyPrefix.length());
-        final String componentPartReference = matcher.group(5);
+        final String componentPartReference = Encoding6Bit.normalize(matcher.group(5));
         final String serial = matcher.group(6);
 
         final CPIPartitionTable partitionTable = CPIPartitionTable.getInstance(tagSize);
@@ -144,7 +145,7 @@ public class CPIParser implements EpcParser<CPI> {
 
         final String companyPrefix = matcher.group(2);
         final PrefixLength prefixLength = PrefixLength.of(companyPrefix.length());
-        final String componentPartReference = matcher.group(3);
+        final String componentPartReference = Encoding6Bit.normalize(matcher.group(3));
         final String serial = matcher.group(4);
 
         final CPIPartitionTable partitionTable = CPIPartitionTable.getInstance(tagSize);
@@ -185,7 +186,10 @@ public class CPIParser implements EpcParser<CPI> {
             // cpi-var
             case BITS_VARIABLE -> {
                 bin.append(BinaryUtils.encodeString(data.componentPartReference, 6 * data.componentPartReference.length(), 6));
+
+                // add the 'terminator'
                 bin.append("000000");
+
                 bin.append(BinaryUtils.encodeInteger(data.serial, data.tagSize.getSerialBitCount()));
             }
         }
@@ -193,12 +197,10 @@ public class CPIParser implements EpcParser<CPI> {
         // Calculate remainder AFTER building the complete binary
         // remainder = (int) (Math.ceil((bin.length() / 16.0)) * 16) - bin.length();
         final int remainder = remainder(bin.length());
-//        if (remainder > 0) {
-//            bin.append(Converter.fill("0", remainder));
-//        }
-        final String binary = StringUtils.rightPad(bin.toString(), bin.length() + remainder, '0');
 
-        return new BinaryResult(binary, remainder);
+        final String out = StringUtils.rightPad(bin.toString(), bin.length() + remainder, '0');
+
+        return new BinaryResult(out, remainder);
     }
 
     private CPI toCPI(final ParsedData data) {
@@ -221,8 +223,8 @@ public class CPIParser implements EpcParser<CPI> {
             data.companyPrefix,
             data.componentPartReference,
             data.serial,
-            "urn:epc:id:cpi:%s.%s.%s".formatted(data.companyPrefix, data.componentPartReference, data.serial),
-            "urn:epc:tag:cpi-%s:%s.%s.%s.%s".formatted(tagSize, data.filterValue.getValue(), data.companyPrefix, data.componentPartReference, data.serial),
+            "urn:epc:id:cpi:%s.%s.%s".formatted(data.companyPrefix, Encoding6Bit.escape(data.componentPartReference), data.serial),
+            "urn:epc:tag:cpi-%s:%s.%s.%s.%s".formatted(tagSize, data.filterValue.getValue(), data.companyPrefix, Encoding6Bit.escape(data.componentPartReference), data.serial),
             "urn:epc:raw:%s.x%s".formatted(outputBin.length(), outputHex),
             outputBin,
             outputHex

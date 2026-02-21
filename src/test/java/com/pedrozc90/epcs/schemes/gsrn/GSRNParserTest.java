@@ -62,7 +62,7 @@ public class GSRNParserTest {
         final GSRNTagSize tagSize = GSRNTagSize.of(Integer.parseInt(expectedTagSize));
         final GSRNFilterValue filterValue = GSRNFilterValue.of(Integer.parseInt(expectedFilterValue));
 
-        final GSRN result = GSRNParser.Builder()
+        final GSRN result = GSRNParser.builder()
             .withCompanyPrefix(expectedCompanyPrefix)
             .withServiceReference(expectedServiceReference)
             .withTagSize(tagSize)
@@ -97,7 +97,7 @@ public class GSRNParserTest {
         final String expectedServiceReference,
         final Integer expectedBitCount
     ) throws Exception {
-        final GSRN result = GSRNParser.Builder()
+        final GSRN result = GSRNParser.builder()
             .withRFIDTag(expectedRfidTag)
             .build();
 
@@ -129,7 +129,7 @@ public class GSRNParserTest {
         final String expectedServiceReference,
         final Integer expectedBitCount
     ) throws Exception {
-        final GSRN result = GSRNParser.Builder()
+        final GSRN result = GSRNParser.builder()
             .withEpcTagURI(expectedEpcTagURI)
             .build();
 
@@ -164,7 +164,7 @@ public class GSRNParserTest {
         final GSRNTagSize tagSize = GSRNTagSize.of(Integer.parseInt(expectedTagSize));
         final GSRNFilterValue filterValue = GSRNFilterValue.of(Integer.parseInt(expectedFilterValue));
 
-        final GSRN result = GSRNParser.Builder()
+        final GSRN result = GSRNParser.builder()
             .withEpcPureIdentityURI(expectedEpcPureIdentityURI)
             .withTagSize(tagSize)
             .withFilterValue(filterValue)
