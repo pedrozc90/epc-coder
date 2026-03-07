@@ -27,6 +27,28 @@ A lightweight and fast Java library for encoding and decoding RFID EPC (Electron
 
 ## Usage
 
+### Installation
+
+#### Maven
+
+```xml
+<repositories>
+    <repository>
+        <id>github</id>
+        <name>GitHub Packages</name>
+        <url>https://maven.pkg.github.com/pedrozc90/epc-coder</url>
+    </repository>
+</repositories>
+```
+
+```xml
+<dependency>
+    <groupId>com.pedrozc90</groupId>
+    <artifactId>epc-coder</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
 ### Encode
 
 ```java
